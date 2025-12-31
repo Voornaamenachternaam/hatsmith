@@ -434,8 +434,8 @@ const LimitedEncryptionPanel = () => {
       sodium.crypto_secretstream_xchacha20poly1305_KEYBYTES,
       password,
       limitedSalt,
-      sodium.crypto_pwhash_OPSLIMIT_INTERACTIVE,
-      sodium.crypto_pwhash_MEMLIMIT_INTERACTIVE,
+      sodium.crypto_pwhash_OPSLIMIT_SENSITIVE,
+      sodium.crypto_pwhash_MEMLIMIT_SENSITIVE,
       sodium.crypto_pwhash_ALG_ARGON2ID13
     );
 

@@ -364,14 +364,14 @@ export default function EncryptionPanel() {
       password = generated;
       setPassword(generated);
       setShortPasswordError(false);
-    }else if (isPassphraseMode === true && encryptionMethod === "secretKey") {
+    } else if (isPassphraseMode === true && encryptionMethod === "secretKey") {
       let generated = await generatePassPhrase();
       password = generated;
       setPassword(generated);
       setShortPasswordError(false);
     };
   }
-
+      if (Password.length >= 16) {
   const handleFilesInput = (selectedFiles) => {
     selectedFiles = Array.from(selectedFiles);
     if (files.length > 0) {

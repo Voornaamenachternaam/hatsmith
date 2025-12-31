@@ -397,8 +397,8 @@ const LimitedDecryptionPanel = () => {
           sodium.crypto_secretstream_xchacha20poly1305_KEYBYTES,
           limitedTestPassword,
           decLimitedTestsalt,
-          sodium.crypto_pwhash_OPSLIMIT_INTERACTIVE,
-          sodium.crypto_pwhash_MEMLIMIT_INTERACTIVE,
+          sodium.crypto_pwhash_OPSLIMIT_SENSITIVE,
+          sodium.crypto_pwhash_MEMLIMIT_SENSITIVE,
           sodium.crypto_pwhash_ALG_ARGON2ID13
         );
 
@@ -544,8 +544,8 @@ const LimitedDecryptionPanel = () => {
       sodium.crypto_secretstream_xchacha20poly1305_KEYBYTES,
       password,
       limitedDecSalt,
-      sodium.crypto_pwhash_OPSLIMIT_INTERACTIVE,
-      sodium.crypto_pwhash_MEMLIMIT_INTERACTIVE,
+      sodium.crypto_pwhash_OPSLIMIT_SENSITIVE,
+      sodium.crypto_pwhash_MEMLIMIT_SENSITIVE,
       sodium.crypto_pwhash_ALG_ARGON2ID13
     );
 

@@ -55,10 +55,48 @@ const options = {
 zxcvbnOptions.setOptions(options)
 
 const passwordStrengthCheck = (password) => {
+  // Enhanced password validation (CWE-521)
+  if (!password || password.length < 16) {
+    return [strength[0], t('less_second')]; // Very weak for passwords under 16 chars
+  }
   
+  // Check for complexity requirements (at least 3 different character types)
+  const hasLowercase = /[a-z]/.test(password);
+  const hasUppercase = /[A-Z]/.test(password);
+  const hasNumbers = /\d/.test(password);
+  const hasSpecialChars = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+  
+  const characterTypes = [hasLowercase, hasUppercase, hasNumbers, hasSpecialChars].filter(Boolean).length;
+  
+  // Detect common weak patterns
+  const weakPatterns = [
+    /^(.)\1+$/, // All same character
+    /^(012|123|234|345|456|567|678|789|890|abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz)/i, // Sequential
+    /^(password|123456|qwerty|admin|letmein|welcome|monkey|dragon)/i, // Common passwords
+    /^(.{1,3})\1+$/, // Repeated short patterns
+  ];
+  
+  const hasWeakPattern = weakPatterns.some(pattern => pattern.test(password));
+  
+  // Apply penalties for weak characteristics
   let strengthResult = zxcvbn(password);
-  console.log(strengthResult);
   let score = strengthResult.score;
+  
+  // Penalize for insufficient character type diversity
+  if (characterTypes < 3) {
+    score = Math.max(0, score - 1);
+  }
+  
+  // Penalize for weak patterns
+  if (hasWeakPattern) {
+    score = Math.max(0, score - 2);
+  }
+  
+  // Bonus for very long passwords with good diversity
+  if (password.length >= 20 && characterTypes >= 4) {
+    score = Math.min(4, score + 1);
+  }
+  
   let crackTimeInSeconds = strengthResult.crackTimesSeconds.offlineSlowHashing1e4PerSecond;
   let crackTime = display_time(crackTimeInSeconds);
 
