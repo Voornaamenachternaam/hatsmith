@@ -55,6 +55,10 @@ const options = {
 zxcvbnOptions.setOptions(options)
 
 const passwordStrengthCheck = (password) => {
+  // Enhanced password requirements validation (CWE-521)
+  if (!isPasswordCompliant(password)) {
+    return [t("very_weak"), t("does_not_meet_requirements")];
+  }
   
   let strengthResult = zxcvbn(password);
   console.log(strengthResult);
@@ -63,6 +67,57 @@ const passwordStrengthCheck = (password) => {
   let crackTime = display_time(crackTimeInSeconds);
 
   return [strength[score], crackTime];
+};
+
+// Enhanced password compliance check (CWE-521)
+const isPasswordCompliant = (password) => {
+  // Minimum length increased from 12 to 16 characters (CWE-521)
+  if (password.length < 16) {
+    return false;
+  }
+  
+  // Check for complexity requirements (3+ character types required)
+  let characterTypes = 0;
+  
+  // Check for lowercase letters
+  if (/[a-z]/.test(password)) {
+    characterTypes++;
+  }
+  
+  // Check for uppercase letters
+  if (/[A-Z]/.test(password)) {
+    characterTypes++;
+  }
+  
+  // Check for digits
+  if (/[0-9]/.test(password)) {
+    characterTypes++;
+  }
+  
+  // Check for special characters
+  if (/[^a-zA-Z0-9]/.test(password)) {
+    characterTypes++;
+  }
+  
+  // Require at least 3 different character types (CWE-521)
+  if (characterTypes < 3) {
+    return false;
+  }
+  
+  // Enhanced pattern detection against common weak passwords (CWE-521)
+  const weakPatterns = [
+    /^(.)\1+$/, // All same character
+    /^(012|123|234|345|456|567|678|789|890|abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz)/i, // Sequential patterns
+    /^(password|123456|qwerty|admin|login|welcome|secret)/i, // Common weak passwords
+  ];
+  
+  for (let pattern of weakPatterns) {
+    if (pattern.test(password)) {
+      return false;
+    }
+  }
+  
+  return true;
 };
 
 export default passwordStrengthCheck;

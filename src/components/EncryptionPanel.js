@@ -337,7 +337,8 @@ export default function EncryptionPanel() {
 
   const handleMethodStep = () => {
     if (encryptionMethodState === "secretKey") {
-      if (Password.length >= 12) {
+      // Enhanced password requirements - minimum 16 characters (CWE-521)
+      if (Password && Password.length >= 16) {
         setActiveStep(2);
       } else {
         setShortPasswordError(true);
@@ -365,12 +366,18 @@ export default function EncryptionPanel() {
       setPassword(generated);
       setShortPasswordError(false);
     }else if (isPassphraseMode === true && encryptionMethod === "secretKey") {
-      let generated = await generatePassPhrase();
+    } else if (isPassphraseMode === true && encryptionMethod === "secretKey") {
+      // Enhanced passphrase generation with better error handling (CWE-330)
+      try {
       password = generated;
       setPassword(generated);
       setShortPasswordError(false);
     };
-  }
+      } catch (error) {
+        console.error('Passphrase generation failed:', error.message);
+        setShortPasswordError(true);
+      }
+    }
 
   const handleFilesInput = (selectedFiles) => {
     selectedFiles = Array.from(selectedFiles);
@@ -1068,7 +1075,7 @@ export default function EncryptionPanel() {
                 )}
 
                 {encryptionMethod === "secretKey" && shortPasswordError && (
-                  <Alert severity="error">{t("short_password")}</Alert>
+                  <Alert severity="error">{t("password_requirements_not_met")}</Alert>
                 )}
               </div>
             </div>
