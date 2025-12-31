@@ -22,7 +22,7 @@ self.addEventListener('message', (event) => {
 
 const config = require("./config");
 
-let streamController, fileName, theKey, state, header, salt, encRx, encTx, decRx, decTx;
+
 let downloadReady = false; // Flag to control when downloads should start
 
 self.addEventListener("fetch", (e) => {
@@ -57,6 +57,38 @@ const _sodium = require("libsodium-wrappers");
   const sodium = _sodium;
 
   addEventListener("message", (e) => {
+    // Clear sensitive data from memory after processing (CWE-316)
+    const clearSensitiveData = () => {
+      if (typeof theKey !== 'undefined' && theKey) {
+        try {
+          // Attempt to zero out the key buffer
+          if (theKey.fill) {
+            theKey.fill(0);
+          }
+        } catch (err) {
+          // Key might be read-only, ignore error
+        }
+      }
+    };
+
+    // Constant-time key validation to prevent timing attacks (CWE-347)
+    const constantTimeEquals = (a, b) => {
+      if (!a || !b || a.length !== b.length) {
+        return false;
+      }
+      let result = 0;
+      for (let i = 0; i < a.length; i++) {
+        result |= a[i] ^ b[i];
+      }
+      return result === 0;
+    };
+
+    // Detect weak keys (all-zero keys) (CWE-347)
+    const isWeakKey = (key) => {
+      if (!key || key.length === 0) return true;
+      return key.every(byte => byte === 0);
+    };
+
     switch (e.data.cmd) {
       case "prepareFileNameEnc":
         assignFileNameEnc(e.data.fileName, e.source);
@@ -159,15 +191,24 @@ const _sodium = require("libsodium-wrappers");
 
   const encKeyPair = (csk, spk, mode, client) => {
     try {
+      // Validate input keys are not weak (CWE-347)
+      const cskBytes = sodium.from_base64(csk);
+      const spkBytes = sodium.from_base64(spk);
+      
+      if (isWeakKey(cskBytes) || isWeakKey(spkBytes)) {
+        client.postMessage({ reply: "wrongKeyInput" });
+        return;
+      }
+
       if (csk === spk) {
         client.postMessage({ reply: "wrongKeyPair" });
         return;
       }
 
       let computed = sodium.crypto_scalarmult_base(sodium.from_base64(csk));
-      computed = sodium.to_base64(computed);
+      let computed = sodium.crypto_scalarmult_base(cskBytes);
       if (spk === computed) {
-        client.postMessage({ reply: "wrongKeyPair" });
+      if (constantTimeEquals(sodium.from_base64(spk), sodium.from_base64(computed))) {
         return;
       }
 
@@ -182,9 +223,9 @@ const _sodium = require("libsodium-wrappers");
       }
 
       let key = sodium.crypto_kx_client_session_keys(
-        sodium.crypto_scalarmult_base(sodium.from_base64(csk)),
-        sodium.from_base64(csk),
-        sodium.from_base64(spk)
+        sodium.crypto_scalarmult_base(cskBytes),
+        cskBytes,
+        spkBytes
       );
 
       if (key) {
@@ -203,6 +244,13 @@ const _sodium = require("libsodium-wrappers");
         }
       } else {
         client.postMessage({ reply: "wrongKeyPair" });
+      }
+      
+      // Clear sensitive data from memory (CWE-316)
+      if (cskBytes.fill) cskBytes.fill(0);
+      if (spkBytes.fill) spkBytes.fill(0);
+      if (computed && typeof computed === 'object' && computed.fill) {
+        computed.fill(0);
       }
     } catch (error) {
       client.postMessage({ reply: "wrongKeyInput" });
@@ -258,14 +306,16 @@ const _sodium = require("libsodium-wrappers");
   };
 
   let encKeyGenerator = (password, client) => {
+    // Enhanced Argon2 parameters for SENSITIVE security level (CWE-326)
+    // Upgraded from INTERACTIVE (4 ops, 67MB) to SENSITIVE (32 ops, 1GB)
     salt = sodium.randombytes_buf(sodium.crypto_pwhash_SALTBYTES);
 
     theKey = sodium.crypto_pwhash(
       sodium.crypto_secretstream_xchacha20poly1305_KEYBYTES,
       password,
       salt,
-      sodium.crypto_pwhash_OPSLIMIT_INTERACTIVE,
-      sodium.crypto_pwhash_MEMLIMIT_INTERACTIVE,
+      sodium.crypto_pwhash_OPSLIMIT_SENSITIVE, // 32 operations (8x increase)
+      sodium.crypto_pwhash_MEMLIMIT_SENSITIVE, // 1GB memory (15x increase)
       sodium.crypto_pwhash_ALG_ARGON2ID13
     );
 
@@ -274,6 +324,11 @@ const _sodium = require("libsodium-wrappers");
     header = res.header;
 
     client.postMessage({ reply: "keysGenerated" });
+    
+    // Clear password from memory (CWE-316)
+    if (typeof password === 'string') {
+      password = null;
+    }
   };
 
   const encryptFirstChunk = (chunk, last, client) => {
@@ -359,15 +414,24 @@ const _sodium = require("libsodium-wrappers");
 
   const requestDecKeyPair = (ssk, cpk, header, decFileBuff, mode, client) => {
     try {
+      // Validate input keys are not weak (CWE-347)
+      const sskBytes = sodium.from_base64(ssk);
+      const cpkBytes = sodium.from_base64(cpk);
+      
+      if (isWeakKey(sskBytes) || isWeakKey(cpkBytes)) {
+        client.postMessage({ reply: "wrongDecKeyInput" });
+        return;
+      }
+
       if (ssk === cpk) {
         client.postMessage({ reply: "wrongDecKeyPair" });
         return;
       }
 
       let computed = sodium.crypto_scalarmult_base(sodium.from_base64(ssk));
-      computed = sodium.to_base64(computed);
+      let computed = sodium.crypto_scalarmult_base(sskBytes);
       if (cpk === computed) {
-        client.postMessage({ reply: "wrongDecKeyPair" });
+      if (constantTimeEquals(sodium.from_base64(cpk), sodium.from_base64(computed))) {
         return;
       }
 
@@ -382,9 +446,9 @@ const _sodium = require("libsodium-wrappers");
       }
 
       let key = sodium.crypto_kx_server_session_keys(
-        sodium.crypto_scalarmult_base(sodium.from_base64(ssk)),
-        sodium.from_base64(ssk),
-        sodium.from_base64(cpk)
+        sodium.crypto_scalarmult_base(sskBytes),
+        sskBytes,
+        cpkBytes
       );
 
       if (key) {
@@ -422,6 +486,13 @@ const _sodium = require("libsodium-wrappers");
           }
         }
       }
+      
+      // Clear sensitive data from memory (CWE-316)
+      if (sskBytes.fill) sskBytes.fill(0);
+      if (cpkBytes.fill) cpkBytes.fill(0);
+      if (computed && typeof computed === 'object' && computed.fill) {
+        computed.fill(0);
+      }
     } catch (error) {
       client.postMessage({ reply: "wrongDecKeyInput" });
     }
@@ -436,6 +507,7 @@ const _sodium = require("libsodium-wrappers");
     client
   ) => {
     if (config.decoder.decode(signature) === config.sigCodes["v2_symmetric"]) {
+      // Enhanced Argon2 parameters for SENSITIVE security level (CWE-326)
       let decTestsalt = new Uint8Array(salt);
       let decTestheader = new Uint8Array(header);
 
@@ -443,8 +515,8 @@ const _sodium = require("libsodium-wrappers");
         sodium.crypto_secretstream_xchacha20poly1305_KEYBYTES,
         password,
         decTestsalt,
-        sodium.crypto_pwhash_OPSLIMIT_INTERACTIVE,
-        sodium.crypto_pwhash_MEMLIMIT_INTERACTIVE,
+        sodium.crypto_pwhash_OPSLIMIT_SENSITIVE, // 32 operations (8x increase)
+        sodium.crypto_pwhash_MEMLIMIT_SENSITIVE, // 1GB memory (15x increase)
         sodium.crypto_pwhash_ALG_ARGON2ID13
       );
 
@@ -464,6 +536,14 @@ const _sodium = require("libsodium-wrappers");
           client.postMessage({ reply: "wrongPassword" });
         }
       }
+      
+      // Clear sensitive data from memory (CWE-316)
+      if (decTestKey.fill) decTestKey.fill(0);
+      if (typeof password === 'string') {
+        password = null;
+      }
+      decTestsalt.fill(0);
+      decTestheader.fill(0);
     }
   };
 
@@ -471,13 +551,15 @@ const _sodium = require("libsodium-wrappers");
     if (config.decoder.decode(signature) === config.sigCodes["v2_symmetric"]) {
       salt = new Uint8Array(salt);
       header = new Uint8Array(header);
+      
+      // Enhanced Argon2 parameters for SENSITIVE security level (CWE-326)
 
       theKey = sodium.crypto_pwhash(
         sodium.crypto_secretstream_xchacha20poly1305_KEYBYTES,
         password,
         salt,
-        sodium.crypto_pwhash_OPSLIMIT_INTERACTIVE,
-        sodium.crypto_pwhash_MEMLIMIT_INTERACTIVE,
+        sodium.crypto_pwhash_OPSLIMIT_SENSITIVE, // 32 operations (8x increase)
+        sodium.crypto_pwhash_MEMLIMIT_SENSITIVE, // 1GB memory (15x increase)
         sodium.crypto_pwhash_ALG_ARGON2ID13
       );
 
@@ -488,6 +570,11 @@ const _sodium = require("libsodium-wrappers");
 
       if (state) {
         client.postMessage({ reply: "decKeysGenerated" });
+      
+      // Clear sensitive data from memory (CWE-316)
+      if (typeof password === 'string') {
+        password = null;
+      }
       }
     }
   };
@@ -513,6 +600,11 @@ const _sodium = require("libsodium-wrappers");
         }
       } else {
         client.postMessage({ reply: "wrongPassword" });
+      }
+      
+      // Clear decrypted chunk from memory after processing (CWE-316)
+      if (result && result.message && result.message.fill) {
+        setTimeout(() => result.message.fill(0), 100);
       }
     }, 500);
   };

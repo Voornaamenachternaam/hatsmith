@@ -6,7 +6,7 @@ import { formatBytes } from "../helpers/formatBytes";
 import KeyPairGeneration from "./KeyPairGeneration";
 import { generatePassword, generatePassPhrase } from "../utils/generatePassword";
 import { computePublicKey } from "../utils/computePublicKey";
-import passwordStrengthCheck from "../utils/passwordStrengthCheck";
+import passwordStrengthCheck, { validatePasswordSecurity } from "../utils/passwordStrengthCheck";
 import { CHUNK_SIZE } from "../config/Constants";
 import { makeStyles } from "@mui/styles";
 import { Alert, AlertTitle } from "@mui/material";
@@ -337,8 +337,12 @@ export default function EncryptionPanel() {
 
   const handleMethodStep = () => {
     if (encryptionMethodState === "secretKey") {
-      if (Password.length >= 12) {
+      // Enhanced password validation (CWE-521) - minimum 16 characters
+      const validation = validatePasswordSecurity(Password);
+      if (validation.valid) {
         setActiveStep(2);
+        setShortPasswordError(false);
+        setKeysErrorMessage("");
       } else {
         setShortPasswordError(true);
       }
@@ -361,7 +365,7 @@ export default function EncryptionPanel() {
   const generatedPassword = async () => {
     if (isPassphraseMode === false && encryptionMethod === "secretKey") {
       let generated = await generatePassword();
-      password = generated;
+      password = generated; 
       setPassword(generated);
       setShortPasswordError(false);
     }else if (isPassphraseMode === true && encryptionMethod === "secretKey") {
@@ -369,7 +373,7 @@ export default function EncryptionPanel() {
       password = generated;
       setPassword(generated);
       setShortPasswordError(false);
-    };
+    }
   }
 
   const handleFilesInput = (selectedFiles) => {
@@ -413,6 +417,11 @@ export default function EncryptionPanel() {
   const handlePasswordInput = (selectedPassword) => {
     password = selectedPassword;
     setPassword(selectedPassword);
+    
+    // Clear error state when user starts typing
+    if (shortPasswordError && selectedPassword.length > 0) {
+      setShortPasswordError(false);
+    }
   };
 
   const handlePublicKeyInput = (selectedKey) => {
@@ -829,7 +838,7 @@ export default function EncryptionPanel() {
             }}
           >
             {encryptionMethod !== "secretKey"
-              ?  t("enter_keys_enc") : isPassphraseMode ? t("enter_passphrase") :  t("enter_password_enc") }
+          </StepLabel>
           </StepLabel>
 
           <StepContent>
@@ -870,6 +879,7 @@ export default function EncryptionPanel() {
             {(encryptionMethod === "secretKey" || encryptionMethod === "secretKey2") && (
               <TextField
                 required
+                inputProps={{ minLength: 16 }}
                 error={shortPasswordError ? true : false}
                 type={showPassword ? "text" : "password"}
                 id="encPasswordInput"
@@ -891,7 +901,7 @@ export default function EncryptionPanel() {
                       </span>
                     </Tooltip>
                   ) : (
-                    t("choose_strong_password")
+                    t("choose_strong_password") + " (16+ characters, 3+ character types)"
                   )
                 }
                 variant="outlined"
@@ -1069,6 +1079,10 @@ export default function EncryptionPanel() {
 
                 {encryptionMethod === "secretKey" && shortPasswordError && (
                   <Alert severity="error">{t("short_password")}</Alert>
+                )}
+                
+                {encryptionMethod === "secretKey" && keysErrorMessage && (
+                  <Alert severity="error">{keysErrorMessage}</Alert>
                 )}
               </div>
             </div>
