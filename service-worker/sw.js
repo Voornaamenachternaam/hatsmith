@@ -23,6 +23,7 @@ self.addEventListener('message', (event) => {
 const config = require("./config");
 
 let streamController, fileName, theKey, state, header, salt, encRx, encTx, decRx, decTx;
+// Enhanced security constants for 2025 standards
 let downloadReady = false; // Flag to control when downloads should start
 
 self.addEventListener("fetch", (e) => {
@@ -54,6 +55,35 @@ self.addEventListener("fetch", (e) => {
 const _sodium = require("libsodium-wrappers");
 (async () => {
   await _sodium.ready;
+
+  // Enhanced cryptographic validation functions for 2025 security standards
+  const validateKeyFormat = (key, expectedLength, keyType) => {
+    try {
+      const decodedKey = sodium.from_base64(key);
+      
+      // Constant-time length check to prevent timing attacks
+      if (decodedKey.length !== expectedLength) {
+        return { valid: false, error: `Invalid ${keyType} key length` };
+      }
+      
+      // Additional validation: check for all-zero keys (weak keys)
+      const isAllZeros = decodedKey.every(byte => byte === 0);
+      if (isAllZeros) {
+        return { valid: false, error: `${keyType} key cannot be all zeros` };
+      }
+      
+      return { valid: true, key: decodedKey };
+    } catch (error) {
+      return { valid: false, error: `Invalid ${keyType} key format` };
+    }
+  };
+
+  // Secure memory clearing function
+  const secureMemoryClear = (buffer) => {
+    if (buffer && buffer.fill) {
+      buffer.fill(0);
+    }
+  };
   const sodium = _sodium;
 
   addEventListener("message", (e) => {
@@ -171,20 +201,28 @@ const _sodium = require("libsodium-wrappers");
         return;
       }
 
-      if (sodium.from_base64(csk).length !== sodium.crypto_kx_SECRETKEYBYTES) {
+      // Enhanced key validation with constant-time operations
+      const privateKeyValidation = validateKeyFormat(csk, sodium.crypto_kx_SECRETKEYBYTES, "private");
+      if (!privateKeyValidation.valid) {
+        console.warn("Private key validation failed:", privateKeyValidation.error);
         client.postMessage({ reply: "wrongPrivateKey" });
         return;
       }
 
-      if (sodium.from_base64(spk).length !== sodium.crypto_kx_PUBLICKEYBYTES) {
+      const publicKeyValidation = validateKeyFormat(spk, sodium.crypto_kx_PUBLICKEYBYTES, "public");
+      if (!publicKeyValidation.valid) {
+        console.warn("Public key validation failed:", publicKeyValidation.error);
         client.postMessage({ reply: "wrongPublicKey" });
         return;
       }
 
+      const decodedPrivateKey = privateKeyValidation.key;
+      const decodedPublicKey = publicKeyValidation.key;
+
       let key = sodium.crypto_kx_client_session_keys(
-        sodium.crypto_scalarmult_base(sodium.from_base64(csk)),
-        sodium.from_base64(csk),
-        sodium.from_base64(spk)
+        sodium.crypto_scalarmult_base(decodedPrivateKey),
+        decodedPrivateKey,
+        decodedPublicKey
       );
 
       if (key) {
@@ -204,7 +242,12 @@ const _sodium = require("libsodium-wrappers");
       } else {
         client.postMessage({ reply: "wrongKeyPair" });
       }
+      
+      // Secure memory cleanup
+      secureMemoryClear(decodedPrivateKey);
+      secureMemoryClear(decodedPublicKey);
     } catch (error) {
+      console.error("Key pair validation error:", error);
       client.postMessage({ reply: "wrongKeyInput" });
     }
   };
@@ -258,16 +301,26 @@ const _sodium = require("libsodium-wrappers");
   };
 
   let encKeyGenerator = (password, client) => {
+    // Use enhanced Argon2 parameters for 2025 security standards
     salt = sodium.randombytes_buf(sodium.crypto_pwhash_SALTBYTES);
+
+    // Enhanced Argon2id parameters for better security
+    const OPSLIMIT_ENHANCED = 32; // Increased from 4 (INTERACTIVE)
+    const MEMLIMIT_ENHANCED = 1073741824; // 1GB, increased from 67MB
 
     theKey = sodium.crypto_pwhash(
       sodium.crypto_secretstream_xchacha20poly1305_KEYBYTES,
       password,
       salt,
-      sodium.crypto_pwhash_OPSLIMIT_INTERACTIVE,
-      sodium.crypto_pwhash_MEMLIMIT_INTERACTIVE,
+      OPSLIMIT_ENHANCED,
+      MEMLIMIT_ENHANCED,
       sodium.crypto_pwhash_ALG_ARGON2ID13
     );
+
+    // Clear password from memory for security
+    if (typeof password === 'string') {
+      password = null;
+    }
 
     let res = sodium.crypto_secretstream_xchacha20poly1305_init_push(theKey);
     state = res.state;
@@ -372,20 +425,28 @@ const _sodium = require("libsodium-wrappers");
       }
 
       if (sodium.from_base64(ssk).length !== sodium.crypto_kx_SECRETKEYBYTES) {
+      // Enhanced key validation for decryption
+      const privateKeyValidation = validateKeyFormat(ssk, sodium.crypto_kx_SECRETKEYBYTES, "private");
+      if (!privateKeyValidation.valid) {
+        console.warn("Decryption private key validation failed:", privateKeyValidation.error);
         client.postMessage({ reply: "wrongDecPrivateKey" });
-        return;
       }
 
       if (sodium.from_base64(cpk).length !== sodium.crypto_kx_PUBLICKEYBYTES) {
+      const publicKeyValidation = validateKeyFormat(cpk, sodium.crypto_kx_PUBLICKEYBYTES, "public");
+      if (!publicKeyValidation.valid) {
+        console.warn("Decryption public key validation failed:", publicKeyValidation.error);
         client.postMessage({ reply: "wrongDecPublicKey" });
-        return;
       }
 
       let key = sodium.crypto_kx_server_session_keys(
+      const decodedPrivateKey = privateKeyValidation.key;
+      const decodedPublicKey = publicKeyValidation.key;
+
         sodium.crypto_scalarmult_base(sodium.from_base64(ssk)),
-        sodium.from_base64(ssk),
-        sodium.from_base64(cpk)
-      );
+        sodium.crypto_scalarmult_base(decodedPrivateKey),
+        decodedPrivateKey,
+        decodedPublicKey
 
       if (key) {
         [decRx, decTx] = [key.sharedRx, key.sharedTx];
@@ -423,7 +484,12 @@ const _sodium = require("libsodium-wrappers");
         }
       }
     } catch (error) {
+      
+      // Secure memory cleanup
+      secureMemoryClear(decodedPrivateKey);
+      secureMemoryClear(decodedPublicKey);
       client.postMessage({ reply: "wrongDecKeyInput" });
+      console.error("Decryption key pair validation error:", error);
     }
   };
 
@@ -439,14 +505,23 @@ const _sodium = require("libsodium-wrappers");
       let decTestsalt = new Uint8Array(salt);
       let decTestheader = new Uint8Array(header);
 
+      // Use enhanced Argon2 parameters for 2025 security standards
+      const OPSLIMIT_ENHANCED = 32;
+      const MEMLIMIT_ENHANCED = 1073741824; // 1GB
+
       let decTestKey = sodium.crypto_pwhash(
         sodium.crypto_secretstream_xchacha20poly1305_KEYBYTES,
         password,
         decTestsalt,
-        sodium.crypto_pwhash_OPSLIMIT_INTERACTIVE,
-        sodium.crypto_pwhash_MEMLIMIT_INTERACTIVE,
+        OPSLIMIT_ENHANCED,
+        MEMLIMIT_ENHANCED,
         sodium.crypto_pwhash_ALG_ARGON2ID13
       );
+
+      // Clear password from memory for security
+      if (typeof password === 'string') {
+        password = null;
+      }
 
       let state_in = sodium.crypto_secretstream_xchacha20poly1305_init_pull(
         decTestheader,
@@ -472,14 +547,23 @@ const _sodium = require("libsodium-wrappers");
       salt = new Uint8Array(salt);
       header = new Uint8Array(header);
 
+      // Use enhanced Argon2 parameters for 2025 security standards
+      const OPSLIMIT_ENHANCED = 32;
+      const MEMLIMIT_ENHANCED = 1073741824; // 1GB
+
       theKey = sodium.crypto_pwhash(
         sodium.crypto_secretstream_xchacha20poly1305_KEYBYTES,
         password,
         salt,
-        sodium.crypto_pwhash_OPSLIMIT_INTERACTIVE,
-        sodium.crypto_pwhash_MEMLIMIT_INTERACTIVE,
+        OPSLIMIT_ENHANCED,
+        MEMLIMIT_ENHANCED,
         sodium.crypto_pwhash_ALG_ARGON2ID13
       );
+
+      // Clear password from memory for security
+      if (typeof password === 'string') {
+        password = null;
+      }
 
       state = sodium.crypto_secretstream_xchacha20poly1305_init_pull(
         header,

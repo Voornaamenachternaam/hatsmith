@@ -7,6 +7,7 @@ import KeyPairGeneration from "./KeyPairGeneration";
 import { generatePassword, generatePassPhrase } from "../utils/generatePassword";
 import { computePublicKey } from "../utils/computePublicKey";
 import passwordStrengthCheck from "../utils/passwordStrengthCheck";
+import { MIN_PASSWORD_LENGTH } from "../config/Constants";
 import { CHUNK_SIZE } from "../config/Constants";
 import { makeStyles } from "@mui/styles";
 import { Alert, AlertTitle } from "@mui/material";
@@ -337,9 +338,15 @@ export default function EncryptionPanel() {
 
   const handleMethodStep = () => {
     if (encryptionMethodState === "secretKey") {
-      if (Password.length >= 12) {
+      // Enhanced password validation for 2025 security standards
+      const [strengthScore, crackTime, complexityIssues] = passwordStrengthCheck(Password);
+      
+      if (Password.length >= MIN_PASSWORD_LENGTH && complexityIssues.length === 0) {
         setActiveStep(2);
+        setShortPasswordError(false);
       } else {
+        // Show specific error message for better user experience
+        console.warn("Password validation failed:", complexityIssues);
         setShortPasswordError(true);
       }
     }
@@ -877,16 +884,25 @@ export default function EncryptionPanel() {
                 placeholder={t("password")}
                 helperText={
                   Password ? (
-                    <Tooltip
-                      title={`${t("crackTimeEstimation")} ${
-                        passwordStrengthCheck(Password)[1]
+                      title={(() => {
+                        const [strengthScore, crackTime, complexityIssues] = passwordStrengthCheck(Password);
+                        let tooltipText = `${t("crackTimeEstimation")} ${crackTime}`;
+                        if (complexityIssues.length > 0) {
+                          tooltipText += `\n\nIssues:\n${complexityIssues.join('\n')}`;
+                        }
+                        return tooltipText;
+                      })()}
                       }`}
                       placement="right"
                       arrow
                     >
                       <span>
                         {t("password_strength")}
-                        {": "}
+                        <strong style={{
+                          color: passwordStrengthCheck(Password)[2].length > 0 ? '#f44336' : 'inherit'
+                        }}>
+                          {passwordStrengthCheck(Password)[0]}
+                        </strong>
                         <strong>{passwordStrengthCheck(Password)[0]}</strong>
                       </span>
                     </Tooltip>
@@ -1069,7 +1085,13 @@ export default function EncryptionPanel() {
 
                 {encryptionMethod === "secretKey" && shortPasswordError && (
                   <Alert severity="error">{t("short_password")}</Alert>
-                )}
+                  <Alert severity="error">
+                    {Password ? (
+                      `Password must be at least ${MIN_PASSWORD_LENGTH} characters and meet complexity requirements`
+                    ) : (
+                      t("short_password")
+                    )}
+                  </Alert>
               </div>
             </div>
           </StepContent>
