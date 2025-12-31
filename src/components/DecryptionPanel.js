@@ -324,7 +324,23 @@ export default function DecryptionPanel() {
   };
 
   const handleFilesInput = (selectedFiles) => {
+    // Enhanced file validation for security
+    const validFiles = [];
+    const invalidFiles = [];
+    
     selectedFiles = Array.from(selectedFiles);
+    
+    selectedFiles.forEach(file => {
+      // Basic security validation
+      if (file.size > 0 && file.size <= 1024 * 1024 * 1024) { // Max 1GB
+        validFiles.push(file);
+      } else {
+        invalidFiles.push(file.name);
+      }
+    });
+    
+    selectedFiles = validFiles;
+    
     if (files.length > 0) {
       files = files.concat(selectedFiles);
       files = files.filter(
@@ -335,6 +351,13 @@ export default function DecryptionPanel() {
     } else {
       files = selectedFiles;
     }
+    
+    // Show warning for invalid files
+    if (invalidFiles.length > 0) {
+      console.warn('Rejected files due to size constraints:', invalidFiles);
+      // Could add user notification here
+    }
+    
     setFiles(files);
     resetFileErrors();
   };
@@ -495,7 +518,21 @@ export default function DecryptionPanel() {
 
   const loadPublicKey = (file) => {
     if (file) {
-      // files must be of text and size below 1 mb
+      if (file.size > 0 && file.size <= 1000000 && file.type.includes('text')) {
+        const reader = new FileReader();
+        reader.readAsText(file);
+        reader.onload = () => {
+          // Validate key format
+          const keyContent = reader.result;
+          if (typeof keyContent === 'string' && keyContent.length > 0) {
+            setPublicKey(keyContent);
+            publicKey = keyContent;
+          }
+        };
+        reader.onerror = () => {
+          console.error('Failed to read public key file');
+        };
+      } else if (file.size <= 1000000) {
       if (file.size <= 1000000) {
         const reader = new FileReader();
         reader.readAsText(file);
@@ -516,7 +553,21 @@ export default function DecryptionPanel() {
   const loadPrivateKey = (file) => {
     if (file) {
       // files must be of text and size below 1 mb
-      if (file.size <= 1000000) {
+      if (file.size > 0 && file.size <= 1000000 && file.type.includes('text')) {
+        const reader = new FileReader();
+        reader.readAsText(file);
+        reader.onload = () => {
+          // Validate key format
+          const keyContent = reader.result;
+          if (typeof keyContent === 'string' && keyContent.length > 0) {
+            setPrivateKey(keyContent);
+            privateKey = keyContent;
+          }
+        };
+        reader.onerror = () => {
+          console.error('Failed to read private key file');
+        };
+      } else if (file.size <= 1000000) {
         const reader = new FileReader();
         reader.readAsText(file);
         reader.onload = () => {

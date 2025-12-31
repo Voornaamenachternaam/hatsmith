@@ -383,7 +383,23 @@ export default function EncryptionPanel() {
       );
     } else {
       files = selectedFiles;
+    // Enhanced file validation for security
+    const validFiles = [];
+    const invalidFiles = [];
+    
     }
+    
+    selectedFiles.forEach(file => {
+      // Basic security validation
+      if (file.size > 0 && file.size <= 1024 * 1024 * 1024) { // Max 1GB
+        validFiles.push(file);
+      } else {
+        invalidFiles.push(file.name);
+      }
+    });
+    
+    selectedFiles = validFiles;
+    
     setFiles(files);
     updateTotalFilesSize();
   };
@@ -394,6 +410,13 @@ export default function EncryptionPanel() {
     updateTotalFilesSize();
   };
 
+    
+    // Show warning for invalid files
+    if (invalidFiles.length > 0) {
+      console.warn('Rejected files due to size constraints:', invalidFiles);
+      // Could add user notification here
+    }
+    
   const resetFilesInput = () => {
     files = [];
     setFiles(files);
@@ -433,7 +456,22 @@ export default function EncryptionPanel() {
         };
         setWrongPublicKey(false);
       }
-    }
+      if (file.size > 0 && file.size <= 1000000 && file.type.includes('text')) {
+        const reader = new FileReader();
+        reader.readAsText(file);
+        reader.onload = () => {
+          // Validate key format
+          const keyContent = reader.result;
+          if (typeof keyContent === 'string' && keyContent.length > 0) {
+            setPublicKey(keyContent);
+            publicKey = keyContent;
+          }
+        };
+        reader.onerror = () => {
+          console.error('Failed to read public key file');
+        };
+        setWrongPublicKey(false);
+      } else if (file.size <= 1000000) {
   };
 
   const handlePrivateKeyInput = (selectedKey) => {
@@ -454,7 +492,22 @@ export default function EncryptionPanel() {
         };
         setWrongPrivateKey(false);
       }
-    }
+      if (file.size > 0 && file.size <= 1000000 && file.type.includes('text')) {
+        const reader = new FileReader();
+        reader.readAsText(file);
+        reader.onload = () => {
+          // Validate key format
+          const keyContent = reader.result;
+          if (typeof keyContent === 'string' && keyContent.length > 0) {
+            setPrivateKey(keyContent);
+            privateKey = keyContent;
+          }
+        };
+        reader.onerror = () => {
+          console.error('Failed to read private key file');
+        };
+        setWrongPrivateKey(false);
+      } else if (file.size <= 1000000) {
   };
 
   const handleEncryptedFilesDownload = async (e) => {

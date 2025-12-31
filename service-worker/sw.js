@@ -157,6 +157,21 @@ const _sodium = require("libsodium-wrappers");
     client.postMessage({ reply: "filePreparedDec" })
   }
 
+  /**
+   * Constant-time comparison to prevent timing attacks
+   * Compares two Uint8Arrays in constant time
+   */
+  const constantTimeEqual = (a, b) => {
+    if (a.length !== b.length) {
+      return false;
+    }
+    let result = 0;
+    for (let i = 0; i < a.length; i++) {
+      result |= a[i] ^ b[i];
+    }
+    return result === 0;
+  };
+
   const encKeyPair = (csk, spk, mode, client) => {
     try {
       if (csk === spk) {
@@ -164,27 +179,41 @@ const _sodium = require("libsodium-wrappers");
         return;
       }
 
-      let computed = sodium.crypto_scalarmult_base(sodium.from_base64(csk));
-      computed = sodium.to_base64(computed);
-      if (spk === computed) {
-        client.postMessage({ reply: "wrongKeyPair" });
+      // Validate key lengths first
+      let privateKeyBytes, publicKeyBytes;
+      try {
+        privateKeyBytes = sodium.from_base64(csk);
+        publicKeyBytes = sodium.from_base64(spk);
+      } catch (error) {
+        client.postMessage({ reply: "wrongKeyInput" });
         return;
       }
 
-      if (sodium.from_base64(csk).length !== sodium.crypto_kx_SECRETKEYBYTES) {
+      if (privateKeyBytes.length !== sodium.crypto_kx_SECRETKEYBYTES) {
         client.postMessage({ reply: "wrongPrivateKey" });
         return;
       }
 
-      if (sodium.from_base64(spk).length !== sodium.crypto_kx_PUBLICKEYBYTES) {
+      if (publicKeyBytes.length !== sodium.crypto_kx_PUBLICKEYBYTES) {
         client.postMessage({ reply: "wrongPublicKey" });
         return;
       }
 
+      // Compute the expected public key from the private key
+      let computedPublicKey = sodium.crypto_scalarmult_base(privateKeyBytes);
+      
+      // Use constant-time comparison to prevent timing attacks
+      // If the provided public key matches the computed one, they're the same key pair
+      if (!constantTimeEqual(publicKeyBytes, computedPublicKey)) {
+        client.postMessage({ reply: "wrongPrivateKey" });
+        return;
+      }
+
+      // Generate session keys using the validated key pair
       let key = sodium.crypto_kx_client_session_keys(
-        sodium.crypto_scalarmult_base(sodium.from_base64(csk)),
-        sodium.from_base64(csk),
-        sodium.from_base64(spk)
+        computedPublicKey,
+        privateKeyBytes,
+        publicKeyBytes
       );
 
       if (key) {
@@ -359,32 +388,52 @@ const _sodium = require("libsodium-wrappers");
 
   const requestDecKeyPair = (ssk, cpk, header, decFileBuff, mode, client) => {
     try {
+      // Validate input parameters
+      if (!ssk || !cpk || !header || !decFileBuff) {
+        client.postMessage({ reply: "wrongDecKeyInput" });
+        return;
+      }
+
       if (ssk === cpk) {
         client.postMessage({ reply: "wrongDecKeyPair" });
         return;
       }
 
-      let computed = sodium.crypto_scalarmult_base(sodium.from_base64(ssk));
-      computed = sodium.to_base64(computed);
-      if (cpk === computed) {
-        client.postMessage({ reply: "wrongDecKeyPair" });
+      // Validate key lengths first
+      let privateKeyBytes, publicKeyBytes;
+      try {
+        privateKeyBytes = sodium.from_base64(ssk);
+        publicKeyBytes = sodium.from_base64(cpk);
+      } catch (error) {
+        client.postMessage({ reply: "wrongDecKeyInput" });
         return;
       }
 
-      if (sodium.from_base64(ssk).length !== sodium.crypto_kx_SECRETKEYBYTES) {
+      if (privateKeyBytes.length !== sodium.crypto_kx_SECRETKEYBYTES) {
         client.postMessage({ reply: "wrongDecPrivateKey" });
         return;
       }
 
-      if (sodium.from_base64(cpk).length !== sodium.crypto_kx_PUBLICKEYBYTES) {
+      if (publicKeyBytes.length !== sodium.crypto_kx_PUBLICKEYBYTES) {
         client.postMessage({ reply: "wrongDecPublicKey" });
         return;
       }
 
+      // Compute the expected public key from the private key
+      let computedPublicKey = sodium.crypto_scalarmult_base(privateKeyBytes);
+      
+      // Use constant-time comparison to prevent timing attacks
+      // If the provided public key matches the computed one, they're the same key pair
+      if (!constantTimeEqual(publicKeyBytes, computedPublicKey)) {
+        client.postMessage({ reply: "wrongDecPrivateKey" });
+        return;
+      }
+
+      // Generate session keys using the validated key pair
       let key = sodium.crypto_kx_server_session_keys(
-        sodium.crypto_scalarmult_base(sodium.from_base64(ssk)),
-        sodium.from_base64(ssk),
-        sodium.from_base64(cpk)
+        computedPublicKey,
+        privateKeyBytes,
+        publicKeyBytes
       );
 
       if (key) {
