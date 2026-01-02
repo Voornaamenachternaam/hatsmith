@@ -476,6 +476,7 @@ export default function EncryptionPanel() {
     e.preventDefault();
     numberOfFiles = Files.length;
     resetCurrFile();
+    console.log('[Encryption] Starting download process for', numberOfFiles, 'files');
     
     // Start the encryption process by preparing the first file
     if (Files.length > 0) {
@@ -486,6 +487,7 @@ export default function EncryptionPanel() {
   const prepareFile = () => {
     // send file name to sw
     let fileName = encodeURIComponent(files[currFile].name + ".enc");
+    console.log('[Encryption] Preparing file:', fileName);
     navigator.serviceWorker.ready.then((reg) => {
       reg.active.postMessage({ cmd: "prepareFileNameEnc", fileName });
     });
@@ -628,11 +630,6 @@ export default function EncryptionPanel() {
         case "downloadStarted":
           break;
 
-        case "downloadReady":
-          // Trigger download when service worker is ready
-          triggerFileDownload();
-          break;
-
         case "downloadStarted":
         case "keyPairReady":
           startEncryption("publicKey");
@@ -656,6 +653,8 @@ export default function EncryptionPanel() {
               handleNext();
             }
           } else {
+            console.log('[Encryption] Single file encryption finished, triggering download');
+            setTimeout(() => triggerFileDownload(), 100);
             // For single file, wait for service worker to be ready then trigger download
             setIsDownloading(false);
             handleNext();
@@ -666,6 +665,7 @@ export default function EncryptionPanel() {
   }, []);
 
   const triggerFileDownload = async () => {
+      console.log('[Encryption] Attempting to trigger file download');
     try {
       console.log('[Encryption] Triggering file download');
       const response = await fetch('/api/download-file');
@@ -690,8 +690,33 @@ export default function EncryptionPanel() {
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
       }
+      } else {
+        console.error('[Encryption] Download failed with status:', response.status);
+        const errorText = await response.text();
+        console.error('[Encryption] Error details:', errorText);
+        
+        // If the service worker isn't ready, retry after a short delay
+        if (response.status === 503 || response.status === 202) {
+          console.log('[Encryption] Service worker not ready, retrying in 1 second...');
+          setTimeout(() => triggerFileDownload(), 1000);
+          return;
+        }
+        
+        setIsDownloading(false);
+      }
     } catch (error) {
       console.error('[Encryption] Download failed:', error);
+      setIsDownloading(false);
+      
+      // Retry logic for network errors
+      if (error.name === 'TypeError' || error.message.includes('fetch')) {
+        console.log('[Encryption] Network error, retrying in 2 seconds...');
+        setTimeout(() => {
+          if (isDownloading) {
+            triggerFileDownload();
+          }
+        }, 2000);
+      }
     }
   };
 

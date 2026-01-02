@@ -14,6 +14,7 @@ export default function handler(req, res) {
     // Set headers that indicate this is a file download
     res.setHeader('Content-Type', 'application/octet-stream');
     res.setHeader('Content-Disposition', 'attachment; filename="encrypted_file.enc"');
+    res.setHeader('Content-Disposition', 'attachment; filename="encrypted_file.enc"');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET');
@@ -22,9 +23,15 @@ export default function handler(req, res) {
     // If we reach here, the service worker didn't intercept properly
     console.log('[API] /download-file endpoint reached - service worker may not be ready');
     
-    // Return a minimal response that indicates the service worker should handle this
-    res.status(202).json({ 
-      message: 'Encryption in progress - service worker will handle download',
+    res.status(503).json({ 
+      error: 'Service worker not ready',
+      message: 'The encryption service is not ready. Please try again.',
+      status: 'service_unavailable',
+      retry_after: 1000,
+      details: {
+        timestamp: new Date().toISOString(),
+        endpoint: '/api/download-file'
+      }
       status: 'waiting'
     });
   } catch (error) {

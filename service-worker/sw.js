@@ -7,8 +7,10 @@ self.addEventListener('install', (event) => {
 const config = require("./config");
 
 let streamController, fileName, theKey, state, header, salt, encRx, encTx, decRx, decTx;
-let downloadReady = false; // Flag to control when downloads should start
-let encryptionInProgress = false; // Flag to track encryption state
+let downloadReady = false;
+let encryptionInProgress = false;
+let encryptionStream = null;
+let pendingDownloadRequests = [];
 
 self.addEventListener('activate', (event) => {
   console.log('[SW] Activated');
@@ -130,7 +132,8 @@ const _sodium = require("libsodium-wrappers");
   const assignFileNameEnc = (name, client) => {
     fileName = name;
     downloadReady = false; // Reset download ready state
-    client.postMessage({ reply: "filePreparedEnc" })
+    encryptionInProgress = false;
+    client.postMessage({ reply: "filePreparedEnc" });
   }
 
   const prepareDownload = (client) => {
@@ -141,7 +144,8 @@ const _sodium = require("libsodium-wrappers");
   const assignFileNameDec = (name, client) => {
     fileName = name;
     downloadReady = false; // Reset download ready state
-    client.postMessage({ reply: "filePreparedDec" })
+    encryptionInProgress = false;
+    client.postMessage({ reply: "filePreparedDec" });
   }
 
   const encKeyPair = (csk, spk, mode, client) => {
@@ -236,15 +240,9 @@ const _sodium = require("libsodium-wrappers");
 
   const asymmetricEncryptFirstChunk = (chunk, last, client) => {
     encryptionInProgress = true;
+    downloadReady = false;
     
-    // Notify clients that encryption has started
-    self.clients.matchAll().then(clients => {
-      clients.forEach(clientInstance => {
-        clientInstance.postMessage({ reply: "encryptionStarted" });
-      });
-    });
-    
-    // Initialize stream immediately
+    console.log('[SW] Starting asymmetric encryption');
     initializeDownloadStream(client);
     
     setTimeout(() => {
@@ -268,9 +266,10 @@ const _sodium = require("libsodium-wrappers");
 
         if (last) {
           streamController.close();
-          // Set download ready only when encryption is complete
-          downloadReady = true;
           encryptionInProgress = false;
+          downloadReady = true;
+          // Process any pending download requests
+          processPendingDownloads();
           console.log('[SW] Asymmetric encryption finished, downloadReady set to true');
           client.postMessage({ reply: "encryptionFinished" });
         }
@@ -287,17 +286,12 @@ const _sodium = require("libsodium-wrappers");
 
   const encryptFirstChunk = (chunk, last, client) => {
     encryptionInProgress = true;
+    downloadReady = false;
     
-    // Notify clients that encryption has started
-    
-    // Initialize stream immediately
+    console.log('[SW] Starting symmetric encryption');
     initializeDownloadStream(client);
     
-    self.clients.matchAll().then(clients => {
-    });
     setTimeout(function () {
-    // Initialize stream immediately
-    initializeDownloadStream(client);
     
       if (!streamController) {
         console.log("stream does not exist");
@@ -327,6 +321,8 @@ const _sodium = require("libsodium-wrappers");
       if (last) {
         streamController.close();
         encryptionInProgress = false;
+        // Process any pending download requests
+        processPendingDownloads();
         downloadReady = true;
         client.postMessage({ reply: "encryptionFinished" });
       }
@@ -359,6 +355,8 @@ const _sodium = require("libsodium-wrappers");
     if (last) {
       streamController.close();
       encryptionInProgress = false;
+      // Process any pending download requests
+      processPendingDownloads();
       downloadReady = true;
       client.postMessage({ reply: "encryptionFinished" });
     }
@@ -369,8 +367,10 @@ const _sodium = require("libsodium-wrappers");
   };
 
   const initializeDownloadStream = (client) => {
-    if (!streamController) {
+    if (!streamController && !encryptionStream) {
       console.log('[SW] Initializing download stream');
+      
+      // Clean up any existing stream first
       const stream = new ReadableStream({
         start(controller) {
           streamController = controller;
@@ -379,13 +379,35 @@ const _sodium = require("libsodium-wrappers");
         cancel() {
           console.log('[SW] Stream cancelled');
           streamController = null;
+          encryptionStream = null;
           downloadReady = false;
           encryptionInProgress = false;
         }
       });
       
-      // Store the stream for later use in fetch handler
-      self.encryptionStream = stream;
+      encryptionStream = stream;
+    }
+  };
+
+  const processPendingDownloads = () => {
+    console.log('[SW] Processing pending downloads, count:', pendingDownloadRequests.length);
+    
+    if (downloadReady && encryptionStream && pendingDownloadRequests.length > 0) {
+      pendingDownloadRequests.forEach(({ resolve, reject }) => {
+        try {
+          const response = new Response(encryptionStream, {
+            headers: {
+              'Content-Disposition': `attachment; filename="${fileName}"`,
+              'Content-Type': 'application/octet-stream',
+              'Cache-Control': 'no-cache'
+            }
+          });
+          resolve(response);
+        } catch (error) {
+          reject(error);
+        }
+      });
+      pendingDownloadRequests = [];
     }
   };
 
@@ -596,32 +618,52 @@ const _sodium = require("libsodium-wrappers");
 
 self.addEventListener("fetch", (e) => {
   if (e.request.url.includes('/api/download-file')) {
-    console.log('[SW] Intercepting download request, downloadReady:', downloadReady, 'streamController:', !!streamController);
+    console.log('[SW] Intercepting download request, downloadReady:', downloadReady, 'encryptionInProgress:', encryptionInProgress, 'streamController:', !!streamController);
     
-    if (downloadReady && self.encryptionStream) {
+    if (downloadReady && encryptionStream) {
       console.log('[SW] Serving encrypted file download');
-      const response = new Response(self.encryptionStream, {
-        headers: {
-          'Content-Disposition': `attachment; filename="${fileName}"`,
-          'Content-Type': 'application/octet-stream',
-          'Cache-Control': 'no-cache'
+      
+      e.respondWith(new Promise((resolve, reject) => {
+        try {
+          const response = new Response(encryptionStream, {
+            headers: {
+              'Content-Disposition': `attachment; filename="${fileName}"`,
+              'Content-Type': 'application/octet-stream',
+              'Cache-Control': 'no-cache'
+            }
+          });
+          
+          // Clean up after serving
+          setTimeout(() => {
+            encryptionStream = null;
+            downloadReady = false;
+            streamController = null;
+          }, 2000);
+          
+          resolve(response);
+        } catch (error) {
+          console.error('[SW] Error creating download response:', error);
+          reject(error);
         }
-      });
-      
-      // Clean up after serving
-      setTimeout(() => {
-        self.encryptionStream = null;
-        downloadReady = false;
-        streamController = null;
-      }, 1000);
-      
-      e.respondWith(response);
-    } else if (encryptionInProgress) {
-      // Encryption still in progress, return a waiting response
-      console.log('[SW] Encryption in progress, returning wait response');
-      e.respondWith(new Response(JSON.stringify({ status: 'encrypting' }), {
-        headers: { 'Content-Type': 'application/json' }
       }));
+      
+    } else if (encryptionInProgress) {
+      // Encryption in progress, queue the request
+      console.log('[SW] Encryption in progress, queuing download request');
+      
+      e.respondWith(new Promise((resolve, reject) => {
+        pendingDownloadRequests.push({ resolve, reject });
+        
+        // Set a timeout to prevent hanging requests
+        setTimeout(() => {
+          const index = pendingDownloadRequests.findIndex(req => req.resolve === resolve);
+          if (index !== -1) {
+            pendingDownloadRequests.splice(index, 1);
+            reject(new Error('Download timeout - encryption took too long'));
+          }
+        }, 30000); // 30 second timeout
+      }));
+      
     } else {
       // Let the request pass through to the API
       console.log('[SW] No encrypted file ready, passing through to API');
