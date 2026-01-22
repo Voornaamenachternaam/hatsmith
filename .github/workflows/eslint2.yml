@@ -26,9 +26,21 @@ jobs:
     name: runner / eslint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - name: Checkout repository
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
+
+      - name: Determine Target Branch
+        id: target_branch
+        run: |
+          # If triggered by a pull_request, target the PR's source branch
+          # Otherwise, target the branch that was pushed
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "branch=${{ github.head_ref }}" >> $GITHUB_OUTPUT
+          else
+            echo "branch=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          fi
 
       - name: Read Node version from .nvmrc
         id: node_version
@@ -41,9 +53,6 @@ jobs:
           fi
           echo "node-version=$version" >> $GITHUB_OUTPUT
 
-      - name: Install
-        run: npm install
-        
       - name: Install dependencies
         run: npm ci
         
@@ -61,7 +70,7 @@ jobs:
         uses: peter-evans/create-pull-request@v8.1.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          base: ${{ github.event.repository.default_branch }}
+          base: ${{ steps.target_branch.outputs.branch }}
           branch: bot/eslint-auto-fix
           title: "ESLint Auto-fix"
           body: "This PR automatically fixes linting issues."
