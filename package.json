@@ -2,6 +2,7 @@
   "name": "hatsmith",
   "version": "3.0.0",
   "private": true,
+  "type": "module"
   "scripts": {
     "dev": "browserify service-worker/sw.js -o public/service-worker.js && next dev",
     "build": "browserify service-worker/sw.js -o public/service-worker.js && next build",
@@ -38,6 +39,8 @@
     "eslint": "^9.39.2",
     "eslint-config-next": "^16.1.4",
     "eslint-plugin-cypress": "^5.2.1",
-    "eslint-plugin-react-refresh": "^0.4.26"
+    "eslint-plugin-react-refresh": "^0.4.26",
+   "eslint-plugin-react-hooks": "^7.0.1",
+    "globals": "^17.0.0"
   }
 }
