@@ -74,7 +74,7 @@ jobs:
         id: eslint_fix
         continue-on-error: true
         run: |
-          npx eslint -fix
+          npx eslint --fix
           echo "=== git status after ESLint ==="
           git status --porcelain
           echo "=== git diff (if any) ==="
