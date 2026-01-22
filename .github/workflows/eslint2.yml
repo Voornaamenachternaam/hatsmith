@@ -6,11 +6,20 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  actions: write
+  artifact-metadata: write
+  attestations: write
   checks: write
-  statuses: write
+  contents: write
+  deployments: write
+  id-token: write
+  issues: write
+  discussions: write
+  packages: write
+  pages: write
   pull-requests: write
-  actions: read
+  security-events: write
+  statuses: write
 
 jobs:
   eslint:
@@ -44,13 +53,6 @@ jobs:
       - name: Run ESLint --fix
         continue-on-error: true
         run: npx eslint . --fix
-
-      - name: Run ESLint (reviewdog)
-        uses: reviewdog/action-eslint@v1.34.0
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-review
-          eslint_flags: "."
 
       - name: Create or update Pull Request with fixes
         continue-on-error: true 
