@@ -30,13 +30,16 @@ jobs:
           fi
           echo "node-version=$version" >> $GITHUB_OUTPUT
 
+      - name: Install
+        run: npm install
+        
+      - name: Install dependencies
+        run: npm ci
+        
       - name: Use Node from .nvmrc
         uses: actions/setup-node@v6.2.0
         with:
           node-version: ${{ steps.node_version.outputs.node-version }}
-
-      - name: Install dependencies
-        run: npm ci
 
       - name: Run ESLint (reviewdog)
         uses: reviewdog/action-eslint@v1.34.0
