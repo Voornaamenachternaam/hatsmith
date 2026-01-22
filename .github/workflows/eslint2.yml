@@ -34,8 +34,6 @@ jobs:
       - name: Determine Target Branch
         id: target_branch
         run: |
-          # If triggered by a pull_request, target the PR's source branch
-          # Otherwise, target the branch that was pushed
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             echo "branch=${{ github.head_ref }}" >> $GITHUB_OUTPUT
           else
@@ -55,7 +53,7 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-        
+
       - name: Use Node from .nvmrc
         uses: actions/setup-node@v6.2.0
         with:
@@ -76,3 +74,8 @@ jobs:
           body: "This PR automatically fixes linting issues."
           commit-message: "This PR automatically fixes linting issues."
           author: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
+          ignore-paths: |
+            node_modules
+            .next
+            out
+            build
