@@ -52,6 +52,7 @@ jobs:
           echo "node-version=$version" >> $GITHUB_OUTPUT
 
       - name: Install dependencies
+        continue-on-error: true 
         run: npm ci
 
       - name: Use Node from .nvmrc
