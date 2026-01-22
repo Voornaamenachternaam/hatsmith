@@ -41,9 +41,23 @@ jobs:
         with:
           node-version: ${{ steps.node_version.outputs.node-version }}
 
+      - name: Run ESLint --fix
+        run: npx eslint . --fix
+
       - name: Run ESLint (reviewdog)
         uses: reviewdog/action-eslint@v1.34.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
           eslint_flags: "."
+
+      - name: Create or update Pull Request with fixes
+        continue-on-error: true 
+        uses: peter-evans/create-pull-request@v8.1.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: bot/eslint-auto-fix
+          title: "ESLint Auto-fix"
+          body: "This PR automatically fixes linting issues."
+          commit-message: "This PR automatically fixes linting issues."
+          author: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
