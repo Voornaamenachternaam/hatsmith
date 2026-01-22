@@ -42,6 +42,7 @@ jobs:
           node-version: ${{ steps.node_version.outputs.node-version }}
 
       - name: Run ESLint --fix
+        continue-on-error: true
         run: npx eslint . --fix
 
       - name: Run ESLint (reviewdog)
