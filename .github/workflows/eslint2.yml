@@ -4,7 +4,7 @@ on:
   push:
   pull_request:
   workflow_dispatch:
-  
+
 permissions:
   actions: write
   artifact-metadata: write
@@ -51,26 +51,47 @@ jobs:
           fi
           echo "node-version=$version" >> $GITHUB_OUTPUT
 
-      - name: Install dependencies
-        run: npm install
-        
       - name: Use Node from .nvmrc
         uses: actions/setup-node@v6.2.0
         with:
           node-version: ${{ steps.node_version.outputs.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci --silent
+          echo "Installed node: $(node -v)    npm: $(npm -v)"
+        env:
+          CI: true
+
+      - name: Show ESLint version and config load debug
+        run: |
+          npx eslint -v || true
+          echo "---- Attempting to load eslint config for debugging ----"
+          node -e "try { require('eslint'); console.log('eslint require ok') } catch(e) { console.error(e); process.exit(0) }"
 
       - name: Run ESLint --fix
+        id: eslint_fix
         continue-on-error: true
-        run: npx eslint . --fix
+        run: |
+          # run eslint only on typical source files to avoid scanning node_modules
+          npx eslint "src/**/*.js" "pages/**/*.js" "app/**/*.js" "**/*.js" --fix || true
+          echo "=== git status after ESLint ==="
+          git status --porcelain
+          echo "=== git diff (if any) ==="
+          git --no-pager diff --name-only || true
 
       - name: Create or update Pull Request with fixes
+        if: ${{ always() }}
         uses: peter-evans/create-pull-request@v8.1.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           base: ${{ steps.target_branch.outputs.branch }}
-          branch: bot/eslint-auto-fix
+          branch: bot/eslint-auto-fix-${{ steps.target_branch.outputs.branch }}
           title: "ESLint Auto-fix"
           body: "This PR automatically fixes linting issues."
-          commit-message: "This PR automatically fixes linting issues."
-          author: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
-          committer: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+          commit-message: "chore: ESLint auto-fix"
+          author: "github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
+          committer: "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
+          create-branch: true
+          signoff: false
