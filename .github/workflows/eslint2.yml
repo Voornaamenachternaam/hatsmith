@@ -30,6 +30,9 @@ jobs:
           fi
           echo "node-version=$version" >> $GITHUB_OUTPUT
 
+      - name: Install dependencies
+        run: npm ci
+        
       - name: Use Node from .nvmrc
         uses: actions/setup-node@v6.2.0
         with:
