@@ -74,12 +74,11 @@ jobs:
         id: eslint_fix
         continue-on-error: true
         run: |
-          # run eslint only on typical source files to avoid scanning node_modules
-          npx eslint "src/**/*.js" "pages/**/*.js" "app/**/*.js" "**/*.js" --fix || true
+          npx eslint -fix
           echo "=== git status after ESLint ==="
           git status --porcelain
           echo "=== git diff (if any) ==="
-          git --no-pager diff --name-only || true
+          git --no-pager diff --name-only
 
       - name: Create or update Pull Request with fixes
         if: ${{ always() }}
