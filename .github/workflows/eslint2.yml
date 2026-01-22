@@ -52,9 +52,8 @@ jobs:
           echo "node-version=$version" >> $GITHUB_OUTPUT
 
       - name: Install dependencies
-        continue-on-error: true 
-        run: npm ci
-
+        run: npm install
+        
       - name: Use Node from .nvmrc
         uses: actions/setup-node@v6.2.0
         with:
