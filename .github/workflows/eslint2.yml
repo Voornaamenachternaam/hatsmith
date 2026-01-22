@@ -4,7 +4,7 @@ on:
   push:
   pull_request:
   workflow_dispatch:
-
+  
 permissions:
   actions: write
   artifact-metadata: write
@@ -46,7 +46,7 @@ jobs:
           version=$(cat .nvmrc 2>/dev/null || true)
           version=$(echo "$version" | tr -d '[:space:]')
           if [ -z "$version" ]; then
-            echo "No .nvmrc found or it is empty — falling back to Node 18"
+            echo "No .nvmrc found or it is empty — falling back to Node 20"
             version="20"
           fi
           echo "node-version=$version" >> $GITHUB_OUTPUT
@@ -63,8 +63,15 @@ jobs:
         continue-on-error: true
         run: npx eslint . --fix
 
+      - name: Configure .gitignore
+        run: |
+          # Ensure node_modules and build directories are ignored
+          echo "node_modules" >> .gitignore
+          echo ".next" >> .gitignore
+          echo "out" >> .gitignore
+          echo "build" >> .gitignore
+
       - name: Create or update Pull Request with fixes
-        continue-on-error: true 
         uses: peter-evans/create-pull-request@v8.1.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -74,8 +81,4 @@ jobs:
           body: "This PR automatically fixes linting issues."
           commit-message: "This PR automatically fixes linting issues."
           author: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
-          ignore-paths: |
-            node_modules
-            .next
-            out
-            build
+          committer: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
