@@ -1,11 +1,12 @@
-import js from '@eslint/js';
-import globals from 'globals';
-import reactHooks from 'eslint-plugin-react-hooks';
-import reactRefresh from 'eslint-plugin-react-refresh';
-import cypress from 'eslint-plugin-cypress/flat';
+// eslint.config.js (CommonJS)
+const js = require('@eslint/js');
+const globals = require('globals');
+const reactHooks = require('eslint-plugin-react-hooks');
+const reactRefresh = require('eslint-plugin-react-refresh');
+const cypress = require('eslint-plugin-cypress/flat');
 
 /** @type {import('eslint').Linter.Config[]} */
-export default [
+module.exports = [
   // Base JavaScript configuration for all files
   {
     files: ['**/*.{js,mjs,cjs}'],
@@ -44,7 +45,6 @@ export default [
   // Next.js pages and app directory configuration
   {
     files: ['pages/**/*.js', 'app/**/*.js'],
-    // FIX: You must define the plugins here to use the rules below
     plugins: {
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh
