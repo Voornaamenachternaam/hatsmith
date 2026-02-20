@@ -17,7 +17,7 @@
 
 ---
 
-[Hatsmith]([https://hatsmith.vercel.app](https://hatsmith-topaz.vercel.app/)) is a web app that provides secure local file encryption in the browser. It's fast, secure, and uses modern cryptographic algorithms with chunked AEAD stream encryption/decryption.
+[Hatsmith](https://hatsmith-topaz.vercel.app/) is a web app that provides secure local file encryption in the browser. It's fast, secure, and uses modern cryptographic algorithms with chunked AEAD stream encryption/decryption.
 
 Hatsmith is a fork of [Hat.sh](https://github.com/sh-dv/hat.sh), created by sh-dv, and other contributors. Hatsmith will be a drop-in replacement for Hat.sh, with the same features and security guarantees, and will keep the same versioning scheme.
 
