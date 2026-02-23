@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-html-link-for-pages */
 import { useState } from "react";
 import { makeStyles } from "@mui/styles";
 import {Alert,AlertTitle} from "@mui/material";
