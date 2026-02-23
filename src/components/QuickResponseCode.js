@@ -1,4 +1,4 @@
-/* eslint-disable @next/next/no-img-element */
+ 
 import { useState } from "react";
 import { makeStyles } from "@mui/styles";
 import Dialog from "@mui/material/Dialog";

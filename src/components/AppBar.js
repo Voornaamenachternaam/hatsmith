@@ -1,5 +1,5 @@
-/* eslint-disable @next/next/no-html-link-for-pages */
-/* eslint-disable @next/next/no-img-element */
+ 
+ 
 import { makeStyles } from "@mui/styles";
 import AppBar from "@mui/material/AppBar";
 import Container from "@mui/material/Container";
