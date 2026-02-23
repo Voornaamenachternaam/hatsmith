@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 import { makeStyles } from "@mui/styles";
 import Backdrop from "@mui/material/Backdrop";
 

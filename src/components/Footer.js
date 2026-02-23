@@ -1,5 +1,4 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable @next/next/no-img-element */
 import { useState, useEffect } from "react";
 import Typography from "@mui/material/Typography";
 import { makeStyles } from "@mui/styles";

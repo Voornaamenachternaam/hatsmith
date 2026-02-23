@@ -3,7 +3,6 @@ const js = require('@eslint/js');
 const globals = require('globals');
 const reactHooks = require('eslint-plugin-react-hooks');
 const { reactRefresh } = require('eslint-plugin-react-refresh');
-const nextPlugin = require('@next/eslint-plugin-next');
 const cypress = require('eslint-plugin-cypress');
 
 /** @type {import('eslint').Linter.Config[]} */
@@ -47,8 +46,7 @@ module.exports = [
     files: ['src/**/*.{js,jsx}'],
     plugins: {
       'react-hooks': reactHooks,
-      'react-refresh': reactRefresh.plugin,
-      '@next/next': nextPlugin
+      'react-refresh': reactRefresh.plugin
     },
     rules: {
       'react-hooks/rules-of-hooks': 'error',
@@ -65,8 +63,7 @@ module.exports = [
     files: ['pages/**/*.js', 'app/**/*.js'],
     plugins: {
       'react-hooks': reactHooks,
-      'react-refresh': reactRefresh.plugin,
-      '@next/next': nextPlugin
+      'react-refresh': reactRefresh.plugin
     },
     rules: {
       'react-hooks/rules-of-hooks': 'error',
