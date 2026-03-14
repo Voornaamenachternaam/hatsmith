@@ -298,7 +298,7 @@ Sharing decryption password can be done using a safe end-to-end encrypted messag
 
 <br>
 
-# [FAQ](#faq)
+# [FAQ](https://hatsmith-topaz.vercel.app/about/#faq)
 
 ---
 
@@ -331,7 +331,7 @@ No, we don't know your password. Always make sure to store your passwords in a p
 
 ### Why am I seeing a notice that says "You have limited experience (single file, 1GB)"?
 
-It means that your browser doesn't support the server-worker fetch api. Hence, you are limited to small size files. see [Limitations](#limitations) for more info.
+It means that your browser doesn't support the server-worker fetch api. Hence, you are limited to small size files. see [Limitations](https://hatsmith-topaz.vercel.app/about/#limitations) for more info.
 
 <hr style="height: 1px" id="why-need-private-key">
 
@@ -359,7 +359,7 @@ Also, if you feel that your private key has been compromised (e.g accidentally s
 
 ### How do I generate a keypair (Public & Private)?
 
-You can generate keys by visit the [key generate page](https://hatsmith-topaz.vercel.app/generate-keys), make sure to [store the keys safely](#best-practices).
+You can generate keys by visit the [key generate page](https://hatsmith-topaz.vercel.app/generate-keys), make sure to [Best-practices](https://hatsmith-topaz.vercel.app/about/#best-practices)
 
 <hr style="height: 1px">
 
