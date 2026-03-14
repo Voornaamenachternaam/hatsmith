@@ -1,13 +1,13 @@
 # [Introduction](#introduction)
 
 ---
-[Hatsmith](https://hatsmith.vercel.app) is a web app that provides secure local file encryption in the browser. It's fast, secure, and uses modern cryptographic algorithms with chunked AEAD stream encryption/decryption.
+[Hatsmith](https://hatsmith-topaz.vercel.app) is a web app that provides secure local file encryption in the browser. It's fast, secure, and uses modern cryptographic algorithms with chunked AEAD stream encryption/decryption.
 
 Hatsmith is a fork of [Hat.sh](https://github.com/sh-dv/hat.sh), created by sh-dv, and other contributors. Hatsmith will be a drop-in replacement for Hat.sh, with the same features and security guarantees, and will keep the same versioning scheme.
 
 <br>
 
-# [Features](#features)
+# [Features](https://hatsmith-topaz.vercel.app/about/#features)
 
 ---
 
@@ -17,7 +17,7 @@ Hatsmith is a fork of [Hat.sh](https://github.com/sh-dv/hat.sh), created by sh-d
 - [Argon2id] - for password-based key derivation.
 - [X25519] - for key exchange.
 
-The libsodium library is used for all cryptographic algorithms. [Technical details here](#technical-details).
+The libsodium library is used for all cryptographic algorithms. [Technical details here](https://hatsmith-topaz.vercel.app/about/#technical-details).
 
 <br>
 
@@ -38,7 +38,7 @@ The libsodium library is used for all cryptographic algorithms. [Technical detai
 
 <br>
 
-# [Installation](#installation)
+# [Installation](https://hatsmith-topaz.vercel.app/about/#installation)
 
 ---
 It's easy to self host and deploy hat.sh, you can do that either with npm or docker
@@ -56,7 +56,7 @@ Before installation make sure you are running [nodejs](https://nodejs.org/en/) a
 1. clone the github repository
 
 ```bash
-git clone https://github.com/mrtechtroid/hatsmith.git hatsmith
+git clone https://github.com/Voornaamenachternaam/hatsmith.git hatsmith
 ```
 
 2. move to the folder
@@ -124,7 +124,7 @@ docker run -d -p 3991:80 shdv/hat.sh
 1. clone the github repository
 
 ```bash
-git clone https://github.com/mrtechtroid/hatsmith.git hatsmith
+git clone https://github.com/Voornaamenachternaam/hatsmith.git hatsmith
 ```
 
 2. move to the folder
@@ -136,13 +136,13 @@ cd hatsmith
 3. build image using docker
 
 ```bash
-docker build . -t mrtechtroid/hatsmith
+docker build . -t Voornaamenachternaam/hatsmith
 ```
 
 4. run container
 
 ```bash
-docker run -d -p 3991:80 mrtechtroid/hatsmith
+docker run -d -p 3991:80 Voornaamenachternaam/hatsmith
 ```
 
 <br>
@@ -152,7 +152,7 @@ docker run -d -p 3991:80 mrtechtroid/hatsmith
 1. clone the github repository
 
 ```bash
-git clone https://github.com/mrtechtroid/hatsmith.git hatsmith
+git clone https://github.com/Voornaamenachternaam/hatsmith.git hatsmith
 ```
 
 2. move to the folder
@@ -182,7 +182,7 @@ The app should be running on port 3991.
 <br>
 
 
-# [Usage](#usage)
+# [Usage](https://hatsmith-topaz.vercel.app/about/#usage)
 
 ---
 
@@ -233,7 +233,7 @@ The app should be running on port 3991.
 
 <br>
 
-# [Limitations](#limitations)
+# [Limitations](https://hatsmith-topaz.vercel.app/about/#limitations)
 
 ---
 
@@ -247,7 +247,7 @@ Safari and Mobile browsers are limited to a single file with maximum size of 1GB
 
 <br>
 
-# [Best Practices](#best-practices)
+# [Best Practices](https://hatsmith-topaz.vercel.app/about/#best-practices)
 
 ---
 
@@ -359,7 +359,7 @@ Also, if you feel that your private key has been compromised (e.g accidentally s
 
 ### How do I generate a keypair (Public & Private)?
 
-You can generate keys by visit the [key generate page](https://hatsmith.vercel.app/generate-keys), make sure to [store the keys safely](#best-practices).
+You can generate keys by visit the [key generate page](https://hatsmith-topaz.vercel.app/generate-keys), make sure to [store the keys safely](#best-practices).
 
 <hr style="height: 1px">
 
@@ -415,7 +415,7 @@ There is no bounty available at the moment, but your github account will be cred
 
 <br>
 
-# [Technical Details](#technical-details)
+# [Technical-details](https://hatsmith-topaz.vercel.app/about/#technical-details)
 
 ---
 
@@ -630,13 +630,12 @@ Internally, XChaCha20 works like a block cipher used in counter mode. It uses th
 [xchacha20-poly1305]: https://libsodium.gitbook.io/doc/secret-key_cryptography/aead/chacha20-poly1305/xchacha20-poly1305_construction
 [argon2id]: https://github.com/p-h-c/phc-winner-argon2
 [x25519]: https://cr.yp.to/ecdh.html
-[opensource]: https://github.com/sh-dv/hat.sh
+[opensource]: https://github.com/Voornaamenachternaam/hatsmith
 [bitwarden]: https://bitwarden.com/
 [extending the salsa20 nonce paper]: https://cr.yp.to/snuffle/xsalsa-20081128.pdf
 [soon]: https://tools.ietf.org/html/draft-irtf-cfrg-xchacha
-[github]: https://github.com/sh-dv/hat.sh
+[github]: https://github.com/Voornaamenachternaam/hatsmith
 [veracrypt]: https://veracrypt.fr
 [cryptomator]: https://cryptomator.org
 [kryptor]: https://github.com/samuel-lucas6/Kryptor
 [gpg]: https://gnupg.org
-[docker hub]: https://hub.docker.com/r/shdv/hat.sh
