@@ -48,20 +48,16 @@ const CheckMultipleTabs = () => {
         elevation: 0,
       }}
       sx={{
-        '& .MuiDialog-scrollPaper': {
+        '& .MuiDialog-container': {
           alignItems: "start",
           marginTop: "20vh",
         },
-        '& .MuiDialog-container': {
-           verticalAlign: "middle",
-        }
       }}
     >
-     
       <DialogContent>
-        <DialogContentText>
-          <Alert severity="warning" style={{fontSize: 16}}>
-            <AlertTitle style={{fontSize: 20, marginBottom: 15,}}>{t("multiple_tabs_alert")}</AlertTitle>
+        <DialogContentText component="div">
+          <Alert severity="warning" sx={{ fontSize: 16 }}>
+            <AlertTitle sx={{ fontSize: 20, marginBottom: '15px' }}>{t("multiple_tabs_alert")}</AlertTitle>
             {t("multiple_tabs_alert_notice_one")}
             <br />
             {t("multiple_tabs_alert_notice_two")}

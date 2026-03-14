@@ -2,71 +2,95 @@ import { createTheme } from "@mui/material/styles";
 import { FormControlLabel, Switch } from "@mui/material";
 import { useState } from "react";
 import { getTranslations as t } from "../../locales";
-import { styled } from '@mui/system';
+import { border, styled } from '@mui/system';
 import { useEffect } from "react";
-const themeOptions = {
+export const Theme = createTheme({
   palette: {
     primary: {
       main: "#464653",
     },
-    custom:{
-    white: {
-      main: "#ffffff",
+    custom: {
+      white: {
+        main: "#ffffff",
+      },
+      alabaster: {
+        main: "#fafafa",
+        dark: "#303030",
+      },
+      mountainMist: {
+        main: "#9791a1",
+      },
+      gallery: {
+        main: "#ebebeb",
+      },
+      cinnabar: {
+        main: "#e74c3c",
+      },
+      denim: {
+        main: "#1976d2",
+      },
+      hawkesBlue: {
+        main: "#d0e5f5",
+        light: "#e3f2fd",
+      },
+      mineShaft: {
+        main: "#3f3f3f",
+      },
+      emperor: {
+        main: "#525252",
+      },
+      mercury: {
+        main: "#e9e9e9",
+        light: "#f3f3f3",
+      },
+      alto: {
+        main: "#e1e1e1",
+        light: "#ebebeb",
+      },
+      flower: {
+        main: "#fdecea",
+        light: "#fadbd7",
+        text: "#611a15",
+      },
+      cottonBoll: {
+        main: "#e8f4fd",
+        light: "#c9e1f2",
+        text: "#0d3c61",
+      },
+      diamondBlack: {
+        main: "rgba(0, 0, 0, 0.54)",
+      },
     },
-
-    alabaster: {
-      main: "#fafafa",
-      dark: "#303030",
-    },
-
-    mountainMist: {
-      main: "#9791a1",
-    },
-    gallery: {
-      main: "#ebebeb",
-    },
-    cinnabar: {
-      main: "#e74c3c",
-    },
-    denim: {
-      main: "#1976d2",
-    },
-    hawkesBlue: {
-      main: "#d0e5f5",
-      light: "#e3f2fd",
-    },
-    mineShaft: {
-      main: "#3f3f3f",
-    },
-    emperor: {
-      main: "#525252",
-    },
-    mercury: {
-      main: "#e9e9e9",
-      light: "#f3f3f3",
-    },
-    alto: {
-      main: "#e1e1e1",
-      light: "#ebebeb",
-    },
-    flower: {
-      main: "#fdecea",
-      light: "#fadbd7",
-      text: "#611a15",
-    },
-    cottonBoll: {
-      main: "#e8f4fd",
-      light: "#c9e1f2",
-      text: "#0d3c61",
-    },
-    diamondBlack : {
-      main: "rgba(0, 0, 0, 0.54)",
-    }
-    }
   },
-};
+  // Ensure custom is always defined for SSR safety
+  components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        body: {
+          backgroundColor: "#fafafa",
+        },
+      },
+    },
+  },
+});
 
-export const Theme = createTheme(themeOptions);
+// Helper for safe custom theme access
+export const getCustom = (theme) => theme?.palette?.custom || {
+  white: { main: "#ffffff" },
+  alabaster: { main: "#fafafa", dark: "#303030" },
+  mountainMist: { main: "#9791a1" },
+  gallery: { main: "#ebebeb" },
+  cinnabar: { main: "#e74c3c" },
+  denim: { main: "#1976d2" },
+  hawkesBlue: { main: "#d0e5f5", light: "#e3f2fd" },
+  mineShaft: { main: "#3f3f3f" },
+  emperor: { main: "#525252" },
+  mercury: { main: "#e9e9e9", light: "#f3f3f3" },
+  alto: { main: "#e1e1e1", light: "#ebebeb" },
+  flower: { main: "#fdecea", light: "#fadbd7", text: "#611a15" },
+  cottonBoll: { main: "#e8f4fd", light: "#c9e1f2", text: "#0d3c61" },
+  diamondBlack: { main: "rgba(0, 0, 0, 0.54)" },
+};
 
 
 

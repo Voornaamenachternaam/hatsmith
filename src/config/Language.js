@@ -12,16 +12,16 @@ const Language = () => {
 
   const handleLanguageChange = (e) => {
     setLanguage(e.target.value);
-    if (localStorage) {
+    if (typeof window !== "undefined" && window.localStorage) {
       localStorage.setItem("language", e.target.value);
+      window.location.reload(true);
     }
-    window.location.reload(true);
   };
 
   return (
     <>
       <FormControl
-        varient="outlined"
+        variant="outlined"
         sx={{
           margin: (theme) => theme.spacing(1),
           minWidth: 120,

@@ -40,13 +40,10 @@ const Settings = () => {
           elevation: 0,
         }}
         sx={{
-          '& .MuiDialog-scrollPaper': {
+          '& .MuiDialog-container': {
             alignItems: "start",
             marginTop: "20vh",
           },
-          '& .MuiDialog-container': {
-             verticalAlign: "middle",
-          }
         }}
       >
         <DialogTitle id="alert-dialog-title">{t('settings')}</DialogTitle>
@@ -57,6 +54,7 @@ const Settings = () => {
 
           <Language />
           <Alert
+          sx={{ marginBottom: (theme) => theme.spacing(2), marginTop: (theme) => theme.spacing(2) }}
           severity="info"
           action={
             <Button
@@ -72,7 +70,7 @@ const Settings = () => {
 
           <DialogContentText
             id="alert-dialog-description"
-            style={{ marginTop: 15 }}
+            sx={{ marginTop: '15px' }}
           >
             {t('change_appearance')} :
           </DialogContentText>

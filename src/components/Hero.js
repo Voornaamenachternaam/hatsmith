@@ -2,6 +2,7 @@ import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
 import { getTranslations as t } from "../../locales";
 import VersionBadge from "./VersionBadge";
+import { getCustom } from "../config/Theme";
 
 export default function Hero() {
   return (
@@ -11,8 +12,8 @@ export default function Hero() {
         align="center"
         gutterBottom
         sx={{
-          color: (theme) => theme.palette.custom?.diamondBlack?.main || "rgba(0, 0, 0, 0.54)",
-          marginTop: "20px",
+          color: (theme) => getCustom(theme).diamondBlack.main,
+          marginTop: '20px',
         }}
       >
         {"Hatsmith"}<VersionBadge />
@@ -23,7 +24,7 @@ export default function Hero() {
         align="center"
         component="p"
         sx={{
-          color: (theme) => theme.palette.custom?.diamondBlack?.main || "rgba(0, 0, 0, 0.54)",
+          color: (theme) => getCustom(theme).diamondBlack.main,
         }}
       >
         {t('sub_title')}

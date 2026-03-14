@@ -12,8 +12,8 @@ import {QRCodeSVG} from 'qrcode.react';
 const QuickResponseCode = (props) => {
   const [open, setOpen] = useState(false);
 
-  let url =
-    typeof window !== "undefined" ? window.location.origin + "/?tab=encryption&publicKey=" + props.publicKey : "";
+  let url = typeof window !== "undefined" ?
+    window.location.origin + "/?tab=encryption&publicKey=" + props.publicKey : "";
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -60,13 +60,10 @@ const QuickResponseCode = (props) => {
           elevation: 0,
         }}
         sx={{
-          '& .MuiDialog-scrollPaper': {
+          '& .MuiDialog-container': {
             alignItems: "start",
             marginTop: "10vh",
           },
-          '& .MuiDialog-container': {
-             verticalAlign: "middle",
-          }
         }}
       >
         <DialogTitle id="alert-dialog-title" />
@@ -88,7 +85,7 @@ const QuickResponseCode = (props) => {
               includeMargin={true}
               renderAs={"canvas"}
               imageSettings={{
-                src: "/assets/icons/qr-logo_new.png",
+                src: "/assets/icons/qr-logo.png",
                 x: null,
                 y: null,
                 height: 40,
@@ -99,16 +96,14 @@ const QuickResponseCode = (props) => {
           </Box>
 
           <DialogContentText>
-            <small>* {t("qr_code_note_one")}</small>
-            <br />
-            <small>* {t("qr_code_note_two")}</small>
-            <br />
-            <small>* {t("qr_code_note_three")}</small>
+            <Box component="small" sx={{ display: 'block' }}>* {t("qr_code_note_one")}</Box>
+            <Box component="small" sx={{ display: 'block' }}>* {t("qr_code_note_two")}</Box>
+            <Box component="small" sx={{ display: 'block' }}>* {t("qr_code_note_three")}</Box>
           </DialogContentText>
 
           {url && (
             <TextField
-              style={{ marginTop: 15 }}
+              sx={{ marginTop: '15px' }}
               defaultValue={url}
               InputProps={{
                 readOnly: true,

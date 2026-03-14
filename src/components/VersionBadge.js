@@ -1,15 +1,16 @@
 import { currentVersion } from "../config/Constants";
 import Chip from "@mui/material/Chip";
+import { getCustom } from "../config/Theme";
 
 const VersionBadge = () => {
   return (
     <Chip
       sx={{
-        backgroundColor: (theme) => theme.palette.custom?.gallery?.main || "#ebebeb",
-        color: (theme) => theme.palette.custom?.mountainMist?.main || "#9791a1",
+        backgroundColor: (theme) => getCustom(theme).gallery.main,
+        color: (theme) => getCustom(theme).mountainMist.main,
         borderRadius: ".25rem",
         padding: "none",
-        marginLeft: "5px",
+        marginLeft: '5px',
         marginBottom: 0,
       }}
       label={"v" + currentVersion}

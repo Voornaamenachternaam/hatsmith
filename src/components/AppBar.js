@@ -18,13 +18,7 @@ export default function NavAppBar() {
       <AppBar color="transparent" position="static" elevation={0}>
         <Container maxWidth="lg">
           <Toolbar>
-            <Typography
-              variant="h6"
-              sx={{
-                flexGrow: 1,
-                marginTop: '10px',
-              }}
-            >
+            <Typography variant="h6" sx={{ flexGrow: 1, marginTop: '10px' }}>
               <a href="/">
                 <img src="/assets/images/logo_new.png" alt="logo" width="40" />
               </a>

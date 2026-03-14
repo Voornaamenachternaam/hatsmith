@@ -10,21 +10,7 @@ import {
   SIGNATURES,
   decoder,
 } from "../../config/Constants";
-import { Alert, AlertTitle } from "@mui/material";
-import Grid from "@mui/material/Grid";
-import Stepper from "@mui/material/Stepper";
-import Step from "@mui/material/Step";
-import StepLabel from "@mui/material/StepLabel";
-import StepContent from "@mui/material/StepContent";
-import Button from "@mui/material/Button";
-import Paper from "@mui/material/Paper";
-import Typography from "@mui/material/Typography";
-import TextField from "@mui/material/TextField";
-import Backdrop from "@mui/material/Backdrop";
-import CircularProgress from "@mui/material/CircularProgress";
-import IconButton from "@mui/material/IconButton";
-import Tooltip from "@mui/material/Tooltip";
-import Collapse from "@mui/material/Collapse";
+import { Alert, AlertTitle, Box, Grid, Stepper, Step, StepLabel, StepContent, Button, Paper, Typography, TextField, Backdrop, CircularProgress, IconButton, Tooltip, Collapse, List, ListItem, ListItemSecondaryAction, ListItemText } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import DescriptionIcon from "@mui/icons-material/Description";
 import GetAppIcon from "@mui/icons-material/GetApp";
@@ -32,63 +18,54 @@ import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import AttachFileIcon from "@mui/icons-material/AttachFile";
 import CloseIcon from "@mui/icons-material/Close";
-import {
-  List,
-  ListItem,
-  ListItemSecondaryAction,
-  ListItemText,
-} from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import InfoIcon from "@mui/icons-material/Info";
-import FileInfoDialog from "../FileInfoDialog";
+import FileInfoDialog from "../FileInfoDialog.jsx";
 import { getTranslations as t } from "../../../locales";
-import Box from "@mui/material/Box";
+import { getCustom } from "../../config/Theme";
 
 const _sodium = require("libsodium-wrappers");
 
-const LimitedDecryptionPanel = () => {
-  const router = useRouter();
+let file,
+  limitedDecIndex,
+  limitedTestDecFileBuff,
+  limitedDecFileBuff,
+  decRx,
+  decTx;
 
+const LimitedDecryptionPanel = () => {
+  const [activeStep, setActiveStep] = useState(0);
+  const router = useRouter();
   const query = router.query;
 
-  const [activeStep, setActiveStep] = useState(0);
-
   const [File, setFile] = useState();
-
+  const [largeFile, setLargeFile] = useState(false);
   const [Password, setPassword] = useState();
-
-  const [showPassword, setShowPassword] = useState(false);
-
-  const [PublicKey, setPublicKey] = useState();
-
-  const [PrivateKey, setPrivateKey] = useState();
-
-  const [showPrivateKey, setShowPrivateKey] = useState(false);
-
-  const [wrongPassword, setWrongPassword] = useState(false);
-
-  const [wrongPublicKey, setWrongPublicKey] = useState(false);
-
-  const [wrongPrivateKey, setWrongPrivateKey] = useState(false);
-
-  const [keysError, setKeysError] = useState(false);
-
-  const [keysErrorMessage, setKeysErrorMessage] = useState();
-
   const [decryptionMethod, setDecryptionMethod] = useState("secretKey");
-
+  const [PublicKey, setPublicKey] = useState();
+  const [PrivateKey, setPrivateKey] = useState();
+  const [showPrivateKey, setShowPrivateKey] = useState(false);
+  const [wrongPublicKey, setWrongPublicKey] = useState(false);
+  const [wrongPrivateKey, setWrongPrivateKey] = useState(false);
+  const [keysError, setKeysError] = useState(false);
+  const [keysErrorMessage, setKeysErrorMessage] = useState();
+  const [isCheckingFile, setIsCheckingFile] = useState(false);
+  const [badFile, setbadFile] = useState(false);
+  const [oldVersion, setOldVersion] = useState(false);
+  const [wrongPassword, setWrongPassword] = useState(false);
+  const [isTestingPassword, setIsTestingPassword] = useState(false);
+  const [isTestingKeys, setIsTestingKeys] = useState(false);
   const [isDecrypting, setIsDecrypting] = useState(false);
-
+  const [showPassword, setShowPassword] = useState(false);
   const [pkAlert, setPkAlert] = useState(false);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop: (acceptedFiles) => {
-      handleFilesInput(acceptedFiles);
+    onDrop: (acceptedFile) => {
+      handleLimitedFileInput(acceptedFile[0]);
     },
     noClick: true,
     noKeyboard: true,
     disabled: activeStep !== 0,
-    multiple: false,
   });
 
   const handleNext = () => {
@@ -101,33 +78,76 @@ const LimitedDecryptionPanel = () => {
     setWrongPublicKey(false);
     setWrongPrivateKey(false);
     setKeysError(false);
-  };
-
-  const handleRadioChange = (method) => {
-    setDecryptionMethod(method);
+    setIsTestingKeys(false);
+    setIsTestingPassword(false);
+    setIsDecrypting(false);
   };
 
   const handleReset = () => {
     setActiveStep(0);
     setFile();
     setPassword();
+    setWrongPassword(false);
+    setbadFile(false);
+    setOldVersion(false);
     setPublicKey();
     setPrivateKey();
-    setWrongPassword(false);
     setWrongPublicKey(false);
     setWrongPrivateKey(false);
     setKeysError(false);
-    setIsDecrypting(false);
     setPkAlert(false);
+    file = null;
+    limitedDecIndex = null;
+    (decRx = null), (decTx = null);
     router.replace(router.pathname);
   };
 
-  const handleFilesInput = (selectedFiles) => {
-    if (selectedFiles[0].size > MAX_FILE_SIZE) {
-      alert(t("file_too_large_limited"));
-      return;
+  const handleLimitedFileInput = (selectedFile) => {
+    file = selectedFile;
+
+    if (file.size > MAX_FILE_SIZE) {
+      setLargeFile(true);
+      setFile();
+    } else {
+      setFile(selectedFile);
+      setLargeFile(false);
     }
-    setFile(selectedFiles[0]);
+
+    setbadFile(false);
+    setOldVersion(false);
+  };
+
+  const removeFile = () => {
+    setFile();
+    setbadFile(false);
+    setOldVersion(false);
+  }
+
+  const checkFile = () => {
+    setIsCheckingFile(true);
+    setbadFile(false);
+    setOldVersion(false);
+
+    Promise.all([
+      file.slice(0, 11).arrayBuffer(),
+      file.slice(0, 22).arrayBuffer(),
+    ]).then(([signature, legacy]) => {
+      if (decoder.decode(signature) === SIGNATURES["v2_symmetric"]) {
+        setDecryptionMethod("secretKey");
+        setActiveStep(1);
+        setIsCheckingFile(false);
+      } else if (decoder.decode(signature) === SIGNATURES["v2_asymmetric"]) {
+        setDecryptionMethod("publicKey");
+        setActiveStep(1);
+        setIsCheckingFile(false);
+      } else if (decoder.decode(legacy) === SIGNATURES["v1"]) {
+        setOldVersion(true);
+        setIsCheckingFile(false);
+      } else {
+        setbadFile(true);
+        setIsCheckingFile(false);
+      }
+    });
   };
 
   const handlePasswordInput = (selectedPassword) => {
@@ -142,14 +162,12 @@ const LimitedDecryptionPanel = () => {
 
   const loadPublicKey = (file) => {
     if (file) {
-      // files must be of text and size below 1 mb
       if (file.size <= 1000000) {
         const reader = new FileReader();
         reader.readAsText(file);
         reader.onload = () => {
           setPublicKey(reader.result);
         };
-        setWrongPublicKey(false);
       }
     }
   };
@@ -161,123 +179,327 @@ const LimitedDecryptionPanel = () => {
 
   const loadPrivateKey = (file) => {
     if (file) {
-      // files must be of text and size below 1 mb
       if (file.size <= 1000000) {
         const reader = new FileReader();
         reader.readAsText(file);
         reader.onload = () => {
           setPrivateKey(reader.result);
         };
-        setWrongPrivateKey(false);
       }
     }
   };
 
-  const handleDecryptionRequest = async () => {
-    setIsDecrypting(true);
+  const requestDecKeyPair = async (ssk, cpk, header, decFileBuff) => {
     await _sodium.ready;
     const sodium = _sodium;
 
-    let reader = new FileReader();
-    reader.readAsArrayBuffer(File);
-    reader.onload = async () => {
-      let cipherTextFull = new Uint8Array(reader.result);
-      let plainText;
+    try {
+      let keyFromkeypair = sodium.crypto_kx_server_session_keys(
+        sodium.crypto_scalarmult_base(sodium.from_base64(ssk)),
+        sodium.from_base64(ssk),
+        sodium.from_base64(cpk)
+      );
 
-      try {
-        if (decryptionMethod === "secretKey") {
-          let header = cipherTextFull.slice(
-            SIGNATURES.length,
-            SIGNATURES.length + sodium.crypto_secretstream_xchacha20poly1305_HEADERBYTES
-          );
-          let salt = cipherTextFull.slice(
-            SIGNATURES.length + sodium.crypto_secretstream_xchacha20poly1305_HEADERBYTES,
-            SIGNATURES.length +
-              sodium.crypto_secretstream_xchacha20poly1305_HEADERBYTES +
-              sodium.crypto_pwhash_SALTBYTES
-          );
-          let cipherText = cipherTextFull.slice(
-            SIGNATURES.length +
-              sodium.crypto_secretstream_xchacha20poly1305_HEADERBYTES +
-              sodium.crypto_pwhash_SALTBYTES
-          );
+      if (keyFromkeypair) {
+        [decRx, decTx] = [keyFromkeypair.sharedRx, keyFromkeypair.sharedTx];
+        if (decRx && decTx) {
+          let limitedDecState =
+            sodium.crypto_secretstream_xchacha20poly1305_init_pull(
+              new Uint8Array(header),
+              decRx
+            );
 
-          let key = sodium.crypto_pwhash(
-            sodium.crypto_secretstream_xchacha20poly1305_KEYBYTES,
-            Password,
-            salt,
-            sodium.crypto_pwhash_OPSLIMIT_INTERACTIVE,
-            sodium.crypto_pwhash_MEMLIMIT_INTERACTIVE,
-            sodium.crypto_pwhash_ALG_ARGON2ID13
-          );
-
-          let res = sodium.crypto_secretstream_xchacha20poly1305_init_pull(
-            header,
-            key
-          );
-          let state = res.state;
-
-          let decryptedMsg = sodium.crypto_secretstream_xchacha20poly1305_pull(
-            state,
-            cipherText
-          );
-          plainText = decryptedMsg.message;
-        }
-
-        if (decryptionMethod === "publicKey") {
-          let sender_pk = sodium.from_base64(PublicKey);
-          let recipient_sk = sodium.from_base64(PrivateKey);
-
-          let header = cipherTextFull.slice(
-            SIGNATURES.length,
-            SIGNATURES.length + sodium.crypto_secretstream_xchacha20poly1305_HEADERBYTES
-          );
-          let eph_pk = cipherTextFull.slice(
-            SIGNATURES.length + sodium.crypto_secretstream_xchacha20poly1305_HEADERBYTES,
-            SIGNATURES.length +
-              sodium.crypto_secretstream_xchacha20poly1305_HEADERBYTES +
-              sodium.crypto_box_PUBLICKEYBYTES
-          );
-          let cipherText = cipherTextFull.slice(
-            SIGNATURES.length +
-              sodium.crypto_secretstream_xchacha20poly1305_HEADERBYTES +
-              sodium.crypto_box_PUBLICKEYBYTES
-          );
-
-          let rx = sodium.crypto_box_beforenm(sender_pk, recipient_sk);
-
-          let res = sodium.crypto_secretstream_xchacha20poly1305_init_pull(
-            header,
-            rx
-          );
-          let state = res.state;
-
-          let decryptedMsg = sodium.crypto_secretstream_xchacha20poly1305_pull(
-            state,
-            cipherText
-          );
-          plainText = decryptedMsg.message;
-        }
-
-        let blob = new Blob([plainText], { type: "application/octet-stream" });
-        let url = window.URL.createObjectURL(blob);
-        let a = document.createElement("a");
-        a.href = url;
-        a.download = formatName(File.name);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        setIsDecrypting(false);
-        handleNext();
-      } catch (e) {
-        setIsDecrypting(false);
-        if (decryptionMethod === "secretKey") {
-          setWrongPassword(true);
-        } else {
-          setKeysError(true);
-          setKeysErrorMessage(t("invalid_keys_input"));
+          if (limitedDecState) {
+            setIsTestingKeys(false);
+            setIsTestingPassword(false);
+            startLimitedDecryption("publicKey", limitedDecState);
+          }
         }
       }
-    };
+    } catch (error) {
+      setKeysError(true);
+      setKeysErrorMessage(t("invalid_keys_input"));
+      setIsTestingKeys(false);
+    }
+  };
+
+  const testLimitedDecryption = async () => {
+    await _sodium.ready;
+    const sodium = _sodium;
+
+    if (decryptionMethod === "secretKey") {
+      setIsTestingPassword(true);
+
+      file = File;
+      let limitedTestPassword = Password;
+
+      Promise.all([
+        file.slice(11, 27).arrayBuffer(),
+        file.slice(27, 51).arrayBuffer(),
+        file
+          .slice(
+            51,
+            51 +
+              CHUNK_SIZE +
+              sodium.crypto_secretstream_xchacha20poly1305_ABYTES
+          )
+          .arrayBuffer(),
+      ]).then(([limitedTestSalt, limitedTestHeader, limitedTestChunk]) => {
+        limitedTestDecFileBuff = limitedTestChunk;
+
+        let decLimitedTestsalt = new Uint8Array(limitedTestSalt);
+        let decLimitedTestheader = new Uint8Array(limitedTestHeader);
+
+        let decLimitedTestKey = sodium.crypto_pwhash(
+          sodium.crypto_secretstream_xchacha20poly1305_KEYBYTES,
+          limitedTestPassword,
+          decLimitedTestsalt,
+          sodium.crypto_pwhash_OPSLIMIT_INTERACTIVE,
+          sodium.crypto_pwhash_MEMLIMIT_INTERACTIVE,
+          sodium.crypto_pwhash_ALG_ARGON2ID13
+        );
+
+        let limitedTestState =
+          sodium.crypto_secretstream_xchacha20poly1305_init_pull(
+            decLimitedTestheader,
+            decLimitedTestKey
+          );
+
+        if (limitedTestState) {
+          let decLimitedTestresults =
+            sodium.crypto_secretstream_xchacha20poly1305_pull(
+              limitedTestState,
+              new Uint8Array(limitedTestDecFileBuff)
+            );
+          if (decLimitedTestresults) {
+            setIsTestingPassword(false);
+
+            limitedDecKeyGenerator(
+              limitedTestPassword,
+              limitedTestSalt,
+              limitedTestHeader
+            );
+          } else {
+            setIsTestingPassword(false);
+            setWrongPassword(true);
+          }
+        }
+      });
+    }
+
+    if (decryptionMethod === "publicKey") {
+      setKeysError(false);
+      setWrongPrivateKey(false);
+      setWrongPublicKey(false);
+      setIsTestingKeys(true);
+
+      file = File;
+      let ssk = PrivateKey;
+      let cpk = PublicKey;
+
+      Promise.all([
+        file.slice(11, 35).arrayBuffer(),
+        file
+          .slice(
+            35,
+            35 +
+              CHUNK_SIZE +
+              sodium.crypto_secretstream_xchacha20poly1305_ABYTES
+          )
+          .arrayBuffer(),
+      ]).then(([limitedTestHeader, limitedTestChunk]) => {
+        limitedTestDecFileBuff = limitedTestChunk;
+
+        let decLimitedTestheader = new Uint8Array(limitedTestHeader);
+
+        try {
+          let computed = sodium.crypto_scalarmult_base(sodium.from_base64(ssk));
+          computed = sodium.to_base64(computed);
+          if (ssk === cpk || cpk === computed) {
+            setKeysError(true);
+            setKeysErrorMessage(t("invalid_key_pair"));
+            setIsTestingKeys(false);
+            return;
+          }
+
+          if (
+            sodium.from_base64(ssk).length !== sodium.crypto_kx_SECRETKEYBYTES
+          ) {
+            setWrongPrivateKey(true);
+            setIsTestingKeys(false);
+            return;
+          }
+
+          if (
+            sodium.from_base64(cpk).length !== sodium.crypto_kx_PUBLICKEYBYTES
+          ) {
+            setWrongPublicKey(true);
+            setIsTestingKeys(false);
+            return;
+          }
+
+          let limitedDecKey = sodium.crypto_kx_server_session_keys(
+            sodium.crypto_scalarmult_base(sodium.from_base64(ssk)),
+            sodium.from_base64(ssk),
+            sodium.from_base64(cpk)
+          );
+
+          if (limitedDecKey) {
+            [decRx, decTx] = [limitedDecKey.sharedRx, limitedDecKey.sharedTx];
+
+            if (decRx && decTx) {
+              let limitedDecState =
+                sodium.crypto_secretstream_xchacha20poly1305_init_pull(
+                  new Uint8Array(decLimitedTestheader),
+                  decRx
+                );
+
+              if (limitedDecState) {
+                let decTestresults =
+                  sodium.crypto_secretstream_xchacha20poly1305_pull(
+                    limitedDecState,
+                    new Uint8Array(limitedTestDecFileBuff)
+                  );
+
+                if (decTestresults) {
+                  setIsTestingKeys(false);
+                  setIsTestingPassword(false);
+                  requestDecKeyPair(
+                    ssk,
+                    cpk,
+                    decLimitedTestheader,
+                    limitedTestDecFileBuff
+                  );
+                } else {
+                  setWrongPublicKey(true);
+                  setWrongPrivateKey(true);
+                  setIsTestingKeys(false);
+                }
+              }
+            }
+          }
+        } catch (error) {
+          setKeysError(true);
+          setKeysErrorMessage(t("invalid_keys_input"));
+          setIsTestingKeys(false);
+        }
+      });
+    }
+  };
+
+  const limitedDecKeyGenerator = async (password, salt, header) => {
+    await _sodium.ready;
+    const sodium = _sodium;
+
+    file = File;
+
+    let limitedDecSalt = new Uint8Array(salt);
+    let limitedDecHeader = new Uint8Array(header);
+
+    let limitedDecKey = sodium.crypto_pwhash(
+      sodium.crypto_secretstream_xchacha20poly1305_KEYBYTES,
+      password,
+      limitedDecSalt,
+      sodium.crypto_pwhash_OPSLIMIT_INTERACTIVE,
+      sodium.crypto_pwhash_MEMLIMIT_INTERACTIVE,
+      sodium.crypto_pwhash_ALG_ARGON2ID13
+    );
+
+    let limitedDecState =
+      sodium.crypto_secretstream_xchacha20poly1305_init_pull(
+        limitedDecHeader,
+        limitedDecKey
+      );
+
+    if (limitedDecState) {
+      startLimitedDecryption("secretKey", limitedDecState);
+    }
+  };
+
+  const startLimitedDecryption = (method, dec_state) => {
+    let startIndex;
+    if (method === "secretKey") startIndex = 51;
+    if (method === "publicKey") startIndex = 35;
+
+    setIsDecrypting(true);
+    limitedDecFileBuff = [];
+    file = File;
+
+    file
+      .slice(
+        startIndex,
+        startIndex + CHUNK_SIZE + crypto_secretstream_xchacha20poly1305_ABYTES
+      )
+      .arrayBuffer()
+      .then((chunk) => {
+        limitedDecIndex =
+          startIndex +
+          CHUNK_SIZE +
+          crypto_secretstream_xchacha20poly1305_ABYTES;
+        let limitedDecLast = limitedDecIndex >= file.size;
+        limitedChunkDecryption(limitedDecLast, chunk, dec_state);
+      });
+  };
+
+  const continueLimitedDecryption = (dec_state) => {
+    file = File;
+
+    file
+      .slice(
+        limitedDecIndex,
+        limitedDecIndex +
+          CHUNK_SIZE +
+          crypto_secretstream_xchacha20poly1305_ABYTES
+      )
+      .arrayBuffer()
+      .then((chunk) => {
+        limitedDecIndex +=
+          CHUNK_SIZE + crypto_secretstream_xchacha20poly1305_ABYTES;
+        let limitedDecLast = limitedDecIndex >= file.size;
+        limitedChunkDecryption(limitedDecLast, chunk, dec_state);
+      });
+  };
+
+  const limitedChunkDecryption = async (limitedDecLast, chunk, dec_state) => {
+    await _sodium.ready;
+    const sodium = _sodium;
+
+    let limitedDecResult = sodium.crypto_secretstream_xchacha20poly1305_pull(
+      dec_state,
+      new Uint8Array(chunk)
+    );
+
+    if (limitedDecResult) {
+      let limitedDecryptedChunk = limitedDecResult.message;
+
+      limitedDecFileBuff.push(new Uint8Array(limitedDecryptedChunk));
+
+      if (limitedDecLast) {
+        handleFinishedDecryption();
+      }
+      if (!limitedDecLast) {
+        continueLimitedDecryption(dec_state);
+      }
+    } else {
+      setWrongPassword(true);
+      setIsTestingPassword(false);
+    }
+  };
+
+  const handleFinishedDecryption = () => {
+    handleNext();
+    setIsDecrypting(false);
+  };
+
+  const handleDecryptedFileDownload = () => {
+    if (typeof window === "undefined") return;
+    let fileName = formatName(File.name);
+    let blob = new Blob(limitedDecFileBuff);
+    let link = document.createElement("a");
+    link.href = window.URL.createObjectURL(blob);
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
   };
 
   useEffect(() => {
@@ -303,11 +525,11 @@ const LimitedDecryptionPanel = () => {
 
   return (
     <Box sx={{ width: "100%" }} {...getRootProps()}>
-      <Backdrop open={isDragActive} style={{ zIndex: 10 }}>
+      <Backdrop open={isDragActive} sx={{ zIndex: 10 }}>
         <Typography
           variant="h2"
           gutterBottom
-          style={{ color: "#fff", textAlign: "center" }}
+          sx={{ color: "#fff", textAlign: "center" }}
         >
           <img
             src="/assets/images/logo_new.png"
@@ -319,8 +541,7 @@ const LimitedDecryptionPanel = () => {
           {t("drop_file_dec")}
         </Typography>
       </Backdrop>
-
-      <Collapse in={pkAlert} style={{ marginTop: 5 }}>
+      <Collapse in={pkAlert} sx={{ marginTop: '5px' }}>
         <Alert
           severity="success"
           action={
@@ -339,77 +560,79 @@ const LimitedDecryptionPanel = () => {
           {t("sender_key_loaded")}
         </Alert>
       </Collapse>
-
       <Stepper
         activeStep={activeStep}
         orientation="vertical"
         sx={{
           backgroundColor: "transparent",
-          '& .MuiStepIcon-root.Mui-active': {
-            color: (theme) => theme.palette.custom?.emperor?.main || "#525252",
-          },
-          '& .MuiStepIcon-root.Mui-completed': {
-            color: (theme) => theme.palette.custom?.emperor?.main || "#525252",
-          },
+          '& .MuiStepIcon-root': {
+            '&.Mui-active': {
+              color: (theme) => getCustom(theme).emperor.main,
+            },
+            '&.Mui-completed': {
+              color: (theme) => getCustom(theme).emperor.main,
+            },
+          }
         }}
       >
         <Step key={1}>
-          <StepLabel>
-            {t("choose_file_dec")}
-          </StepLabel>
+          <StepLabel>{t("choose_file_dec")}</StepLabel>
           <StepContent>
-            <div className="wrapper p-3" id="decFileWrapper">
+            <FileInfoDialog file={selectedFile} display={showInfo} onClose={handleCloseInfo} />
+            <Box className="wrapper p-3" id="encFileWrapper">
               <Box
-                id="decFileArea"
+                id="encFileArea"
                 sx={{
-                  display: File ? "" : "flex",
                   padding: "20px",
                   border: "5px dashed",
-                  borderColor: (theme) => theme.palette.custom?.gallery?.main || "#ebebeb",
+                  borderColor: (theme) => getCustom(theme).gallery.main,
                   borderRadius: "14px",
-                  marginBottom: "10px",
+                  display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   flexDirection: "column",
+                  marginBottom: "10px",
                 }}
               >
                 <Paper
                   elevation={0}
                   sx={{
-                    marginBottom: '15px',
                     overflow: "auto",
                     maxHeight: "280px",
                     backgroundColor: "transparent",
                   }}
                 >
-                  <List dense={true} sx={{
-                    display: "flex",
-                    flex: "1",
-                    flexWrap: "wrap",
-                    alignContent: "center",
-                    justifyContent: "center",
-                  }}>
+                  <List
+                    dense={true}
+                    sx={{
+                      display: "flex",
+                      flex: "1",
+                      flexWrap: "wrap",
+                      alignContent: "center",
+                      justifyContent: "center",
+                    }}
+                  >
                     {File ? (
                       <ListItem
                         sx={{
-                          backgroundColor: "#f3f3f3",
+                          backgroundColor: "#ebebeb",
                           borderRadius: "8px",
                           padding: '15px',
                         }}
                       >
                         <ListItemText
                           sx={{
-                            width: "100px",
-                            maxWidth: "150px",
+                            width: "200px",
                             minHeight: "50px",
                             maxHeight: "50px",
+                            textAlign: "center",
                           }}
                           primary={File.name}
                           secondary={formatBytes(File.size)}
                         />
                         <ListItemSecondaryAction>
                           <IconButton
-                            style={{ marginTop: 40 }}
+                            sx={{ marginTop: '40px' }}
                             onClick={() => handleOpenInfo(File)}
                             edge="end"
                             aria-label="info"
@@ -417,8 +640,8 @@ const LimitedDecryptionPanel = () => {
                             <InfoIcon />
                           </IconButton>
                           <IconButton
-                            style={{ marginTop: 40 }}
-                            onClick={() => setFile()}
+                            sx={{ marginTop: '40px' }}
+                            onClick={() => removeFile()}
                             edge="end"
                             aria-label="delete"
                           >
@@ -427,19 +650,19 @@ const LimitedDecryptionPanel = () => {
                         </ListItemSecondaryAction>
                       </ListItem>
                     ) : (
-                      t("drag_drop_file_dec")
+                      t("drag_drop")
                     )}
                   </List>
                 </Paper>
 
                 <input
-                  {...getInputProps()}
-                  style={{ display: "none" }}
                   id="dec-file"
                   type="file"
-                  onChange={(e) => handleFilesInput(e.target.files)}
+                  style={{ display: 'none' }}
+                  onChange={(e) => handleLimitedFileInput(e.target.files[0])}
                 />
                 <label htmlFor="dec-file">
+                  <br />
                   <Button
                     sx={{
                       padding: '8px',
@@ -448,55 +671,87 @@ const LimitedDecryptionPanel = () => {
                       textTransform: "none",
                       borderRadius: "8px",
                       border: "none",
-                      color: (theme) => theme.palette.custom?.mineShaft?.main || "#3f3f3f",
-                      backgroundColor: (theme) => theme.palette.custom?.alto?.light || "#ebebeb",
+                      color: (theme) => getCustom(theme).mineShaft.main,
+                      backgroundColor: (theme) => getCustom(theme).alto.light,
                       "&:hover": {
-                        backgroundColor: (theme) => theme.palette.custom?.alto?.main || "#e1e1e1",
+                        backgroundColor: (theme) => getCustom(theme).alto.main,
                       },
                       transition: "background-color 0.2s ease-out, color .01s",
                     }}
                     component="span"
-                    startIcon={File ? <RefreshIcon /> : <DescriptionIcon />}
+                    startIcon={<DescriptionIcon />}
                   >
                     {File ? t("change_file") : t("browse_file")}
                   </Button>
                 </label>
               </Box>
-              <FileInfoDialog file={selectedFile} display={showInfo} onClose={handleCloseInfo} />
-            </div>
+            </Box>
 
             <Box sx={{ marginBottom: (theme) => theme.spacing(2) }}>
               <div>
                 <Button
-                  fullWidth
-                  disabled={!File}
+                  disabled={isCheckingFile || !File}
                   variant="contained"
-                  onClick={handleNext}
+                  onClick={checkFile}
                   sx={{
                     marginTop: (theme) => theme.spacing(1),
                     marginRight: (theme) => theme.spacing(1),
                     borderRadius: "8px",
-                    backgroundColor: (theme) => theme.palette.primary?.main || "#464653",
-                    color: (theme) => theme.palette.custom?.white?.main || "#ffffff",
+                    backgroundColor: (theme) => theme.palette.primary.main,
+                    color: (theme) => getCustom(theme).white.main,
                     "&:hover": {
-                      backgroundColor: (theme) => theme.palette.custom?.mineShaft?.main || "#3f3f3f",
+                      backgroundColor: (theme) => getCustom(theme).mineShaft.main,
                     },
                     transition: "color .01s",
                   }}
                   className="nextBtnHs"
+                  startIcon={
+                    isCheckingFile && (
+                      <CircularProgress
+                        size={24}
+                      />
+                    )
+                  }
+                  fullWidth
                 >
-                  {t("next")}
+                  {isCheckingFile ? t("checking_file") : t("next")}
                 </Button>
+
+                {largeFile && (
+                  <>
+                    <Alert severity="error" sx={{ marginTop: '15px' }}>
+                      <strong>{t("file_too_big")}</strong>{" "}
+                      {t("choose_file_1gb")}
+                    </Alert>
+                  </>
+                )}
               </div>
+
+              {badFile && (
+                <Alert severity="error" sx={{ marginTop: '15px' }}>
+                  {t("file_not_encrypted_corrupted")}
+                </Alert>
+              )}
+
+              {oldVersion && (
+                <Alert severity="error" sx={{ marginTop: '15px' }}>
+                  {t("old_version")}{" "}
+                  <a href="https://v1.hat.sh/" target="_blank" rel="noreferrer">
+                    {"https://v1.hat.sh"}
+                  </a>
+                </Alert>
+              )}
             </Box>
 
-            <Typography sx={{
+            {!badFile && !oldVersion && !largeFile && (
+              <Typography sx={{
                 fontSize: 12,
                 float: "right",
-                color: (theme) => theme.palette.custom?.diamondBlack?.main || "rgba(0, 0, 0, 0.54)",
-            }}>
-              {t("offline_note")}
-            </Typography>
+                color: (theme) => getCustom(theme).diamondBlack.main,
+              }}>
+                {t("offline_note")}
+              </Typography>
+            )}
           </StepContent>
         </Step>
 
@@ -506,40 +761,17 @@ const LimitedDecryptionPanel = () => {
               ? t("enter_password_dec")
               : t("enter_keys_dec")}
           </StepLabel>
-
           <StepContent>
-            <FormControl
-              component="fieldset"
-              style={{ float: "right", marginBottom: "15px" }}
-            >
-              <RadioGroup
-                row
-                value={decryptionMethod}
-                aria-label="decryption options"
-              >
-                <FormControlLabel
-                  value="secretKey"
-                  control={<Radio color="default" />}
-                  label={t("password")}
-                  labelPlacement="end"
-                  onChange={() => handleRadioChange("secretKey")}
-                />
-                <FormControlLabel
-                  value="publicKey"
-                  control={<Radio color="default" />}
-                  label={t("public_key")}
-                  labelPlacement="end"
-                  onChange={() => handleRadioChange("publicKey")}
-                />
-              </RadioGroup>
-            </FormControl>
-
             {decryptionMethod === "secretKey" && (
               <TextField
                 required
-                error={wrongPassword ? true : false}
                 type={showPassword ? "text" : "password"}
-                id="decPasswordInput"
+                error={wrongPassword ? true : false}
+                id={
+                  wrongPassword
+                    ? "outlined-error-helper-text"
+                    : "outlined-required"
+                }
                 label={wrongPassword ? t("error") : t("required")}
                 helperText={wrongPassword ? t("wrong_password") : ""}
                 placeholder={t("password")}
@@ -549,17 +781,13 @@ const LimitedDecryptionPanel = () => {
                 fullWidth
                 InputProps={{
                   endAdornment: (
-                    <>
-                      {Password && (
-                        <Tooltip title={t("show_password")} placement="left">
-                          <IconButton
-                            onClick={() => setShowPassword(!showPassword)}
-                          >
-                            {showPassword ? <Visibility /> : <VisibilityOff />}
-                          </IconButton>
-                        </Tooltip>
-                      )}
-                    </>
+                    <Tooltip title={t("show_password")} placement="left">
+                      <IconButton
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? <Visibility /> : <VisibilityOff />}
+                      </IconButton>
+                    </Tooltip>
                   ),
                 }}
               />
@@ -568,25 +796,22 @@ const LimitedDecryptionPanel = () => {
             {decryptionMethod === "publicKey" && (
               <>
                 <TextField
-                  id="public-key-input-dec"
                   required
-                  error={wrongPublicKey ? true : false}
-                  label={
-                    wrongPublicKey ? t("error") : t("sender_public_key")
-                  }
+                  error={wrongPublicKey || keysError ? true : false}
                   helperText={wrongPublicKey ? t("wrong_public_key") : ""}
+                  label={t("sender_public_key")}
                   placeholder={t("enter_sender_public_key")}
                   variant="outlined"
                   value={PublicKey ? PublicKey : ""}
                   onChange={(e) => handlePublicKeyInput(e.target.value)}
                   fullWidth
-                  style={{ marginBottom: "15px" }}
+                  sx={{ marginBottom: "15px" }}
                   InputProps={{
                     endAdornment: (
                       <>
                         <input
                           accept=".public"
-                          style={{ display: "none" }}
+                          style={{ display: 'none' }}
                           id="dec-public-key-file"
                           type="file"
                           onChange={(e) => loadPublicKey(e.target.files[0])}
@@ -610,7 +835,6 @@ const LimitedDecryptionPanel = () => {
                 />
 
                 <TextField
-                  id="private-key-input-dec"
                   type={showPrivateKey ? "text" : "password"}
                   required
                   error={wrongPrivateKey || keysError ? true : false}
@@ -621,7 +845,7 @@ const LimitedDecryptionPanel = () => {
                   value={PrivateKey ? PrivateKey : ""}
                   onChange={(e) => handlePrivateKeyInput(e.target.value)}
                   fullWidth
-                  style={{ marginBottom: "15px" }}
+                  sx={{ marginBottom: "15px" }}
                   InputProps={{
                     endAdornment: (
                       <>
@@ -644,7 +868,7 @@ const LimitedDecryptionPanel = () => {
 
                         <input
                           accept=".private"
-                          style={{ display: "none" }}
+                          style={{ display: 'none' }}
                           id="dec-private-key-file"
                           type="file"
                           onChange={(e) => loadPrivateKey(e.target.files[0])}
@@ -669,19 +893,23 @@ const LimitedDecryptionPanel = () => {
               </>
             )}
 
-            <Box sx={{ marginBottom: (theme) => theme.spacing(2), marginTop: '15px' }}>
+            <Box sx={{ marginBottom: (theme) => theme.spacing(2) }}>
               <div>
                 <Grid container spacing={1}>
                   <Grid item>
                     <Button
-                      disabled={activeStep === 0}
+                      disabled={
+                        activeStep === 0 ||
+                        isTestingPassword ||
+                        isTestingKeys ||
+                        isDecrypting
+                      }
                       onClick={handleBack}
                       sx={{
                         marginTop: (theme) => theme.spacing(1),
                         marginRight: (theme) => theme.spacing(1),
                         borderRadius: "8px",
-                        backgroundColor: (theme) => theme.palette.custom?.mercury?.main || "#e9e9e9",
-                        transition: "color .01s",
+                        backgroundColor: (theme) => getCustom(theme).mercury.main,
                       }}
                       fullWidth
                     >
@@ -693,25 +921,41 @@ const LimitedDecryptionPanel = () => {
                       disabled={
                         (decryptionMethod === "secretKey" && !Password) ||
                         (decryptionMethod === "publicKey" &&
-                          (!PublicKey || !PrivateKey))
+                          (!PublicKey || !PrivateKey)) ||
+                        isTestingPassword ||
+                        isTestingKeys ||
+                        isDecrypting
                       }
                       variant="contained"
-                      onClick={handleDecryptionRequest}
+                      onClick={testLimitedDecryption}
                       sx={{
                         marginTop: (theme) => theme.spacing(1),
                         marginRight: (theme) => theme.spacing(1),
                         borderRadius: "8px",
-                        backgroundColor: (theme) => theme.palette.primary?.main || "#464653",
-                        color: (theme) => theme.palette.custom?.white?.main || "#ffffff",
+                        backgroundColor: (theme) => theme.palette.primary.main,
+                        color: (theme) => getCustom(theme).white.main,
                         "&:hover": {
-                          backgroundColor: (theme) => theme.palette.custom?.mineShaft?.main || "#3f3f3f",
+                          backgroundColor: (theme) => getCustom(theme).mineShaft.main,
                         },
                         transition: "color .01s",
                       }}
                       className="nextBtnHs"
+                      startIcon={
+                        (isTestingPassword || isDecrypting) && (
+                          <CircularProgress
+                            size={24}
+                          />
+                        )
+                      }
                       fullWidth
                     >
-                      {t("next")}
+                      {isTestingPassword
+                        ? t("testing_password")
+                        : isTestingKeys
+                        ? t("testing_keys")
+                        : isDecrypting
+                        ? t("decrypting_file")
+                        : t("next")}
                     </Button>
                   </Grid>
                 </Grid>
@@ -720,112 +964,85 @@ const LimitedDecryptionPanel = () => {
                 {decryptionMethod === "publicKey" && keysError && (
                   <Alert severity="error">{keysErrorMessage}</Alert>
                 )}
+
+                {isDecrypting && (
+                  <Alert variant="outlined" severity="info">
+                    {t("page_close_alert_dec")}
+                  </Alert>
+                )}
               </div>
             </Box>
           </StepContent>
         </Step>
 
         <Step key={3}>
-          <StepLabel>
-            {t("decrypt_file")}
-          </StepLabel>
-          <StepContent>
-            <Alert severity="success" icon={<LockOpenIcon />}>
-              <strong>{File ? File.name : ""}</strong> {t("ready_to_download")}
-            </Alert>
-
-            <Box sx={{ marginBottom: (theme) => theme.spacing(2) }}>
-              <Grid container spacing={1}>
-                <Grid item>
-                  <Button
-                    disabled={activeStep === 0 || isDecrypting}
-                    onClick={handleBack}
-                    sx={{
-                      marginTop: (theme) => theme.spacing(1),
-                      marginRight: (theme) => theme.spacing(1),
-                      borderRadius: "8px",
-                      backgroundColor: (theme) => theme.palette.custom?.mercury?.main || "#e9e9e9",
-                      transition: "color .01s",
-                    }}
-                  >
-                    {t("back")}
-                  </Button>
-                </Grid>
-                <Grid item xs>
-                  <Button
-                    disabled={isDecrypting || !File}
-                    onClick={handleDecryptionRequest}
-                    variant="contained"
-                    sx={{
-                      marginTop: (theme) => theme.spacing(1),
-                      marginRight: (theme) => theme.spacing(1),
-                      borderRadius: "8px",
-                      backgroundColor: (theme) => theme.palette.primary?.main || "#464653",
-                      color: (theme) => theme.palette.custom?.white?.main || "#ffffff",
-                      "&:hover": {
-                        backgroundColor: (theme) => theme.palette.custom?.mineShaft?.main || "#3f3f3f",
-                      },
-                      transition: "color .01s",
-                    }}
-                    className="nextBtnHs"
-                    startIcon={
-                      isDecrypting ? (
-                        <CircularProgress
-                          size={24}
-                        />
-                      ) : (
-                        <LockOpenIcon />
-                      )
-                    }
-                    fullWidth
-                  >
-                    {isDecrypting ? t("decrypting_file") : t("decrypt_file")}
-                  </Button>
-                </Grid>
-              </Grid>
-            </Box>
-          </StepContent>
+          <StepLabel>{t("download_decrypted_file")}</StepLabel>
         </Step>
       </Stepper>
-      {activeStep === 3 && (
-        <Paper
-          elevation={1}
-          sx={{
-            padding: (theme) => theme.spacing(3),
-            boxShadow: "rgba(149, 157, 165, 0.4) 0px 8px 24px",
-            borderRadius: "8px",
-          }}
-        >
+
+      {activeStep === 2 && (
+        <Paper elevation={1} sx={{
+          padding: (theme) => theme.spacing(3),
+          boxShadow: "rgba(149, 157, 165, 0.4) 0px 8px 24px",
+          borderRadius: "8px",
+        }}>
           <Alert
             variant="outlined"
             severity="success"
-            style={{ border: "none" }}
+            sx={{ border: "none" }}
           >
             <AlertTitle>{t("success")}</AlertTitle>
             {t("success_decrypted")}
           </Alert>
 
-          <Button
-            onClick={handleReset}
-            sx={{
-              marginTop: (theme) => theme.spacing(1),
-              marginRight: (theme) => theme.spacing(1),
-              borderRadius: "8px",
-              border: "none",
-              color: (theme) => theme.palette.custom?.mineShaft?.main || "#3f3f3f",
-              backgroundColor: (theme) => theme.palette.custom?.mercury?.light || "#f3f3f3",
-              "&:hover": {
-                backgroundColor: (theme) => theme.palette.custom?.mercury?.main || "#e9e9e9",
-              },
-              transition: "background-color 0.2s ease-out, color .01s",
-              textTransform: "none"
-            }}
-            variant="outlined"
-            startIcon={<RefreshIcon />}
-            fullWidth
-          >
-            {t("decrypt_another_file")}
-          </Button>
+          <Grid container spacing={1} sx={{ marginTop: '5px' }}>
+            <Grid item xs={12}>
+              <Button
+                onClick={handleDecryptedFileDownload}
+                sx={{
+                  marginTop: (theme) => theme.spacing(1),
+                  marginRight: (theme) => theme.spacing(1),
+                  borderRadius: "8px",
+                  backgroundColor: (theme) => theme.palette.primary.main,
+                  color: (theme) => getCustom(theme).white.main,
+                  "&:hover": {
+                    backgroundColor: (theme) => getCustom(theme).mineShaft.main,
+                  },
+                  transition: "color .01s",
+                  textTransform: "none"
+                }}
+                className="nextBtnHs"
+                variant="contained"
+                startIcon={<GetAppIcon />}
+                fullWidth
+              >
+                {t("download_file")}
+              </Button>
+            </Grid>
+            <Grid item xs={12}>
+              <Button
+                onClick={handleReset}
+                sx={{
+                  marginTop: (theme) => theme.spacing(1),
+                  marginRight: (theme) => theme.spacing(1),
+                  borderRadius: "8px",
+                  border: "none",
+                  color: (theme) => getCustom(theme).mineShaft.main,
+                  backgroundColor: (theme) => getCustom(theme).mercury.light,
+                  "&:hover": {
+                    backgroundColor: (theme) => getCustom(theme).mercury.main,
+                  },
+                  transition: "background-color 0.2s ease-out, color .01s",
+                  textTransform: "none"
+                }}
+                variant="outlined"
+                startIcon={<RefreshIcon />}
+                fullWidth
+              >
+                {t("decrypt_another_file")}
+              </Button>
+            </Grid>
+          </Grid>
         </Paper>
       )}
     </Box>

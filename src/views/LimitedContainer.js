@@ -1,13 +1,14 @@
+import { Box } from "@mui/material";
 import NavAppBar from "../components/AppBar";
 import Hero from "../components/Hero";
 import LimitedPanels from "../components/limited/LimitedPanels";
 import Footer from "../components/Footer";
-import Box from "@mui/material/Box";
+import { getCustom } from "../config/Theme";
 
 const LimitedContainer = () => {
   return (
     <Box sx={{
-        backgroundColor: (theme) => theme.palette.custom?.alabaster?.main || "#fff",
+        backgroundColor: (theme) => getCustom(theme).alabaster.main,
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
