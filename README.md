@@ -7,12 +7,6 @@
 
 <div align="center">
 
-[![Status](https://img.shields.io/badge/status-active-success.svg)](#)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](#)
-<!-- [![CodeQL](https://github.com/sh-dv/hat.sh/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/sh-dv/hat.sh/actions/workflows/codeql-analysis.yml)
-[![Node.js CI](https://github.com/sh-dv/hat.sh/actions/workflows/node.js.yml/badge.svg?branch=master)](https://github.com/sh-dv/hat.sh/actions/workflows/node.js.yml)
-[![Snyk](https://github.com/sh-dv/hat.sh/actions/workflows/snyk.yml/badge.svg)](https://github.com/sh-dv/hat.sh/actions/workflows/snyk.yml) -->
-
 </div>
 
 ---
@@ -20,10 +14,6 @@
 [Hatsmith](https://hatsmith-topaz.vercel.app/) is a web app that provides secure local file encryption in the browser. It's fast, secure, and uses modern cryptographic algorithms with chunked AEAD stream encryption/decryption.
 
 Hatsmith is a fork of [Hat.sh](https://github.com/sh-dv/hat.sh), created by sh-dv, and other contributors. Hatsmith will be a drop-in replacement for Hat.sh, with the same features and security guarantees, and will keep the same versioning scheme.
-
-## Usage
-
-![how-to-use-gif](https://i.imgur.com/NbAZOgP.gif)
 
 <br>
 
@@ -80,12 +70,6 @@ Safari and Mobile browsers are limited to single 1GB files, due to lack of suppo
 
 <br>
 
-## Donations
-
-I'm not accepting donations at this time.
-If you want to donate, please consider donating to the original project, [Hat.sh](https://github.com/sh-dv/hat.sh).
-
-
 ## Acknowledgements and Credits
 
 - Everyone who supported the project.
@@ -104,6 +88,7 @@ If you want to donate, please consider donating to the original project, [Hat.sh
 <br>
 
 ## License
-This project is licensed under [MIT License](/LICENSE).   
-Copyright (c) 2025 mrtechtroid  
+This project is licensed under [MIT License](/LICENSE).
+Copyright (c) 2025 Voornaamenachternaam
+Copyright (c) 2025 mrtechtroid
 Copyright (c) 2022 sh-dv
