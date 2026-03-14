@@ -32,7 +32,7 @@ import LiveHelpIcon from "@mui/icons-material/LiveHelp";
 import HistoryIcon from "@mui/icons-material/History";
 import prism from "prismjs";
 import Settings from "../src/components/Settings";
-import { ThemeProvider as MuiThemeProvider } from "@mui/material/styles";
+import { ThemeProvider as MuiThemeProvider } from "@mui/system";
 import { ThemeProvider as StylesThemeProvider } from "@mui/styles";
 import { Theme, checkTheme } from "../src/config/Theme";
 import locales from "../locales/locales";

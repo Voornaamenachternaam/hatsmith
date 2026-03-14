@@ -1,7 +1,7 @@
 import Head from "next/head";
 import { getTranslations as t } from "../locales";
 import "../public/assets/styles/style.css";
-import { ThemeProvider as MuiThemeProvider } from "@mui/material/styles";
+import { ThemeProvider as MuiThemeProvider } from "@mui/system";
 import { ThemeProvider as StylesThemeProvider } from "@mui/styles";
 import { CssBaseline } from "@mui/material";
 import { Theme, checkTheme } from "../src/config/Theme";

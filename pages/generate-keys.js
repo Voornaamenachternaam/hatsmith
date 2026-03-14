@@ -1,4 +1,4 @@
-import { ThemeProvider } from "@mui/material/styles";
+import { ThemeProvider } from "@mui/system";
 import { ThemeProvider as StylesThemeProvider } from "@mui/styles";
 import { Theme } from "../src/config/Theme";
 import NavAppBar from "../src/components/AppBar";

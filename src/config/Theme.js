@@ -2,7 +2,7 @@ import { createTheme } from "@mui/material/styles";
 import { FormControlLabel, Switch } from "@mui/material";
 import { useState } from "react";
 import { getTranslations as t } from "../../locales";
-import { styled } from '@mui/material/styles';
+import { styled } from '@mui/system';
 import { useEffect } from "react";
 const themeOptions = {
   palette: {

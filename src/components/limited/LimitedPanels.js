@@ -12,7 +12,7 @@ import LimitedAlert from "./LimitedAlert";
 
 import { getTranslations as t } from "../../../locales";
 
-import { styled as muiStyled } from "@mui/material/styles";
+import { styled as muiStyled } from "@mui/system";
 
 const StyledTabs = muiStyled((props) => (
   <Tabs {...props} TabIndicatorProps={{ children: <span /> }} />

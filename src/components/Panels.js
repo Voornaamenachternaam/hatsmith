@@ -18,7 +18,7 @@ const StyledTabs = muiStyled((props) => (
   },
 });
 
-import { styled as muiStyled } from "@mui/material/styles";
+import { styled as muiStyled } from "@mui/system";
 
 const StyledTab = muiStyled((props) => <Tab disableRipple {...props} />)(({ theme }) => ({
   textTransform: "none",
