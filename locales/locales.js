@@ -1,15 +1,15 @@
 import en_US from "./en_US";
-import fr_FR from "./fr_FR";
-import de_DE from "./de_DE";
-import zh_CN from "./zh_CN";
-import ru_RU from "./ru_RU";
-import it_IT from "./it_IT";
-import sk_SK from "./sk_SK";
-import es_ES from "./es_ES";
-import cs_CS from "./cs_CS";
-import tr_TR from "./tr_TR";
-import ja_JP from "./ja_JP";
-import ca_ES from "./ca_ES";
+import fr_FR from "./en_US";
+import de_DE from "./en_US";
+import zh_CN from "./en_US";
+import ru_RU from "./en_US";
+import it_IT from "./en_US";
+import sk_SK from "./en_US";
+import es_ES from "./en_US";
+import cs_CS from "./en_US";
+import tr_TR from "./en_US";
+import ja_JP from "./en_US";
+import ca_ES from "./en_US";
 
 const locales = {
   en_US,
