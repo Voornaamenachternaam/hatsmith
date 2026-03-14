@@ -88,7 +88,7 @@ Safari and Mobile browsers are limited to single 1GB files, due to lack of suppo
 <br>
 
 ## License
-This project is licensed under [MIT License](/LICENSE).
-Copyright (c) 2025 Voornaamenachternaam
-Copyright (c) 2025 mrtechtroid
+This project is licensed under [MIT License](/LICENSE).   
+Copyright (c) 2025 Voornaamachternaam  
+Copyright (c) 2025 mrtechtroid  
 Copyright (c) 2022 sh-dv
