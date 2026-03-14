@@ -1,4 +1,3 @@
-import { makeStyles } from "@mui/styles";
 import AppBar from "@mui/material/AppBar";
 import Container from "@mui/material/Container";
 import Toolbar from "@mui/material/Toolbar";
@@ -13,33 +12,32 @@ import Language from "../config/Language";
 import { DarkModeLight } from "../config/Theme";
 import { Box } from "@mui/material";
 
-const useStyles = makeStyles((theme) => ({
-
-  logo: {
-    flexGrow: 1,
-    marginTop: 10,
-  },
-  button: {
-    textTransform: "none",
-    color: theme.palette.custom.diamondBlack.main,
-  },
-}));
-
 export default function NavAppBar() {
-  const classes = useStyles();
-
   return (
     <div>
       <AppBar color="transparent" position="static" elevation={0}>
         <Container maxWidth="lg">
           <Toolbar>
-            <Typography variant="h6" className={classes.logo}>
+            <Typography
+              variant="h6"
+              sx={{
+                flexGrow: 1,
+                marginTop: '10px',
+              }}
+            >
               <a href="/">
                 <img src="/assets/images/logo_new.png" alt="logo" width="40" />
               </a>
             </Typography>
 
-            <Button color="inherit" href="/about/" className={classes.button}>
+            <Button
+              color="inherit"
+              href="/about/"
+              sx={{
+                textTransform: "none",
+                color: (theme) => theme.palette.custom?.diamondBlack?.main || "rgba(0, 0, 0, 0.54)",
+              }}
+            >
               {t("about")}
             </Button>
             

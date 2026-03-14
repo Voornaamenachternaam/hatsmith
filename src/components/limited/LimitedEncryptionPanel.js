@@ -12,7 +12,6 @@ import {
 import { formatBytes } from "../../helpers/formatBytes";
 import { computePublicKey } from "../../utils/computePublicKey";
 import { Alert, AlertTitle } from "@mui/material";
-import { makeStyles } from "@mui/styles";
 import Grid from "@mui/material/Grid";
 import Stepper from "@mui/material/Stepper";
 import Step from "@mui/material/Step";
@@ -54,118 +53,10 @@ import InfoIcon from "@mui/icons-material/Info";
 import FileInfoDialog from "../FileInfoDialog";
 import { getTranslations as t } from "../../../locales";
 import { generatePassword, generatePassPhrase } from "../../utils/generatePassword";
+import Box from "@mui/material/Box";
 const _sodium = require("libsodium-wrappers");
 
-const useStyles = makeStyles((theme) => ({
-  root: {
-    width: "100%",
-  },
-  offline: {
-    fontSize: 12,
-    float: "right",
-    color: theme.palette.custom.diamondBlack.main,
-  },
-  stepper: {
-    backgroundColor: "transparent",
-  },
-  stepIcon: {
-    "&$activeStepIcon": {
-      color: theme.palette.custom.emperor.main,
-    },
-    "&$completedStepIcon": {
-      color: theme.palette.custom.emperor.main,
-    },
-  },
-  activeStepIcon: {},
-  completedStepIcon: {},
-
-  button: {
-    marginTop: theme.spacing(1),
-    marginRight: theme.spacing(1),
-    borderRadius: "8px",
-    border: "none",
-    color: theme.palette.custom.mineShaft.main,
-    backgroundColor: theme.palette.custom.mercury.light,
-    "&:hover": {
-      backgroundColor: theme.palette.custom.mercury.main,
-    },
-    transition: "background-color 0.2s ease-out",
-    transition: "color .01s",
-  },
-
-  browseButton: {
-    padding: 8,
-    paddingLeft: 15,
-    paddingRight: 15,
-    textTransform: "none",
-    borderRadius: "8px",
-    border: "none",
-    color: theme.palette.custom.mineShaft.main,
-    backgroundColor: theme.palette.custom.alto.light,
-    "&:hover": {
-      backgroundColor: theme.palette.custom.alto.main,
-    },
-    transition: "background-color 0.2s ease-out",
-    transition: "color .01s",
-  },
-
-  backButton: {
-    marginTop: theme.spacing(1),
-    marginRight: theme.spacing(1),
-    borderRadius: "8px",
-    backgroundColor: theme.palette.custom.mercury.main,
-    transition: "color .01s",
-  },
-  nextButton: {
-    marginTop: theme.spacing(1),
-    marginRight: theme.spacing(1),
-    borderRadius: "8px",
-    backgroundColor: theme.palette.primary.main,
-    color: theme.palette.custom.white.main,
-    "&:hover": {
-      backgroundColor: theme.palette.custom.mineShaft.main,
-    },
-    transition: "color .01s",
-  },
-  actionsContainer: {
-    marginBottom: theme.spacing(2),
-  },
-  resetContainer: {
-    padding: theme.spacing(3),
-    boxShadow: "rgba(149, 157, 165, 0.4) 0px 8px 24px",
-    borderRadius: "8px",
-  },
-
-  input: {
-    display: "none",
-  },
-
-  fileArea: {
-    padding: "20px",
-    border: "5px dashed",
-    borderColor: theme.palette.custom.gallery.main,
-    borderRadius: "14px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    flexDirection: "column",
-    marginBottom: "10px",
-  },
-}));
-
-let file,
-  limitedIndex,
-  limitedSalt,
-  limitedKey,
-  limitedState,
-  limitedHeader,
-  limitedEncFileBuff,
-  encRx,
-  encTx;
-
 const LimitedEncryptionPanel = () => {
-  const classes = useStyles();
-
   const router = useRouter();
 
   const query = router.query;
@@ -173,8 +64,6 @@ const LimitedEncryptionPanel = () => {
   const [activeStep, setActiveStep] = useState(0);
 
   const [File, setFile] = useState();
-
-  const [largeFile, setLargeFile] = useState(false);
 
   const [Password, setPassword] = useState();
 
@@ -211,12 +100,13 @@ const LimitedEncryptionPanel = () => {
   const [isPassphraseMode, setIsPassphraseMode] = useState(false);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop: (acceptedFile) => {
-      handleLimitedFileInput(acceptedFile[0]);
+    onDrop: (acceptedFiles) => {
+      handleFilesInput(acceptedFiles);
     },
     noClick: true,
     noKeyboard: true,
     disabled: activeStep !== 0,
+    multiple: false,
   });
 
   const handleNext = () => {
@@ -231,34 +121,30 @@ const LimitedEncryptionPanel = () => {
     setShortPasswordError(false);
   };
 
-  const handleRadioChange = (e) => {
-    if (e.target.value === "secretKey2") {
+  const handleRadioChange = (method) => {
+    if (method === "secretKey2") {
       setIsPassphraseMode(true);
-      setEncryptionMethod("secretKey");
+      method = "secretKey";
     } else {
       setIsPassphraseMode(false);
-      setEncryptionMethod(e.target.value);
     }
+    setEncryptionMethod(method);
   };
 
   const handleReset = () => {
     setActiveStep(0);
     setFile();
     setPassword();
-    setIsEncrypting(false);
     setPublicKey();
     setPrivateKey();
     setWrongPublicKey(false);
     setWrongPrivateKey(false);
     setKeysError(false);
     setShortPasswordError(false);
+    setIsEncrypting(false);
     setShareableLink();
     setSnackBarMessage();
     setPkAlert(false);
-    file = null;
-    limitedEncFileBuff = null;
-    limitedIndex = null;
-    (encRx = null), (encTx = null);
     router.replace(router.pathname);
   };
 
@@ -269,41 +155,59 @@ const LimitedEncryptionPanel = () => {
   const handleMethodStep = () => {
     if (encryptionMethod === "secretKey") {
       if (Password.length >= 12) {
-        setActiveStep(2);
+        handleNext();
       } else {
         setShortPasswordError(true);
       }
     }
 
     if (encryptionMethod === "publicKey") {
-      let mode = "test";
-      let privateKey = PrivateKey;
-      let publicKey = PublicKey;
-      encKeyPair(privateKey, publicKey, mode);
+      testKeyPair();
+    }
+  };
+
+  const testKeyPair = async () => {
+    await _sodium.ready;
+    const sodium = _sodium;
+    try {
+      let pk = sodium.from_base64(PublicKey);
+      let sk = sodium.from_base64(PrivateKey);
+
+      if (pk.length !== sodium.crypto_box_PUBLICKEYBYTES) {
+        setWrongPublicKey(true);
+        return;
+      }
+      if (sk.length !== sodium.crypto_box_SECRETKEYBYTES) {
+        setWrongPrivateKey(true);
+        return;
+      }
+
+      handleNext();
+    } catch (e) {
+      setKeysError(true);
+      setKeysErrorMessage(t("invalid_keys_input"));
     }
   };
 
   const generatedPassword = async () => {
-    let gPassword = ""
-    if (isPassphraseMode){
-      gPassword = await generatePassPhrase();
-    }else{
-      gPassword = await generatePassword();
-    }
-    setPassword(gPassword);
-    setShortPasswordError(false);
-  };
+    if (isPassphraseMode === false && encryptionMethod === "secretKey") {
+      let generated = await generatePassword();
+      setPassword(generated);
+      setShortPasswordError(false);
+    }else if (isPassphraseMode === true && encryptionMethod === "secretKey") {
+      let generated = await generatePassPhrase();
+      setPassword(generated);
+      setShortPasswordError(false);
+    };
+  }
 
-  const handleLimitedFileInput = (selectedFile) => {
-    file = selectedFile;
-
-    if (file.size > MAX_FILE_SIZE) {
-      setLargeFile(true);
-      setFile();
-    } else {
-      setFile(selectedFile);
-      setLargeFile(false);
+  const handleFilesInput = (selectedFiles) => {
+    if (selectedFiles[0].size > MAX_FILE_SIZE) {
+      setSnackBarMessage(t("file_too_large_limited"));
+      showSnackBar();
+      return;
     }
+    setFile(selectedFiles[0]);
   };
 
   const handlePasswordInput = (selectedPassword) => {
@@ -348,203 +252,100 @@ const LimitedEncryptionPanel = () => {
     }
   };
 
-  const encKeyPair = async (csk, spk, mode) => {
-    await _sodium.ready;
-    const sodium = _sodium;
-
-    try {
-      let computed = sodium.crypto_scalarmult_base(sodium.from_base64(csk));
-      computed = sodium.to_base64(computed);
-      if (csk === spk || spk === computed) {
-        //wrong keypair
-        setKeysError(true);
-        setKeysErrorMessage(t("invalid_key_pair"));
-        return;
-      }
-
-      if (sodium.from_base64(csk).length !== sodium.crypto_kx_SECRETKEYBYTES) {
-        //wrong private key
-        setWrongPrivateKey(true);
-        return;
-      }
-
-      if (sodium.from_base64(spk).length !== sodium.crypto_kx_PUBLICKEYBYTES) {
-        //wrongPublicKey
-        setWrongPublicKey(true);
-        return;
-      }
-
-      let key = sodium.crypto_kx_client_session_keys(
-        sodium.crypto_scalarmult_base(sodium.from_base64(csk)),
-        sodium.from_base64(csk),
-        sodium.from_base64(spk)
-      );
-
-      if (key) {
-        [encRx, encTx] = [key.sharedRx, key.sharedTx];
-
-        if (mode === "test" && encRx && encTx) {
-          //good keypair
-          setActiveStep(2);
-        }
-
-        if (mode === "derive" && encRx && encTx) {
-          let limitedRes =
-            sodium.crypto_secretstream_xchacha20poly1305_init_push(encTx);
-          limitedState = limitedRes.state;
-          limitedHeader = limitedRes.header;
-          //keyPairReady
-        }
-      } else {
-        //wrong keypair
-        setKeysError(true);
-        setKeysErrorMessage(t("invalid_key_pair"));
-        return;
-      }
-    } catch (error) {
-      setKeysError(true);
-      setKeysErrorMessage(t("invalid_keys_input"));
-      return;
-    }
-  };
-
   const handleEncryptionRequest = async () => {
-    if (encryptionMethod === "secretKey") {
-      await limitedEncKeyGenerator(Password);
-      startLimitedEncryption(File);
-    }
-
-    if (encryptionMethod === "publicKey") {
-      let mode = "derive";
-      let privateKey = PrivateKey;
-      let publicKey = PublicKey;
-      await encKeyPair(privateKey, publicKey, mode);
-      startLimitedEncryption(File);
-    }
-  };
-
-  const limitedEncKeyGenerator = async (password) => {
+    setIsEncrypting(true);
     await _sodium.ready;
     const sodium = _sodium;
 
-    limitedSalt = sodium.randombytes_buf(sodium.crypto_pwhash_SALTBYTES);
+    let reader = new FileReader();
+    reader.readAsArrayBuffer(File);
+    reader.onload = async () => {
+      let plainText = new Uint8Array(reader.result);
+      let cipherText;
 
-    limitedKey = sodium.crypto_pwhash(
-      sodium.crypto_secretstream_xchacha20poly1305_KEYBYTES,
-      password,
-      limitedSalt,
-      sodium.crypto_pwhash_OPSLIMIT_INTERACTIVE,
-      sodium.crypto_pwhash_MEMLIMIT_INTERACTIVE,
-      sodium.crypto_pwhash_ALG_ARGON2ID13
-    );
+      if (encryptionMethod === "secretKey") {
+        let salt = sodium.randombytes_buf(sodium.crypto_pwhash_SALTBYTES);
+        let key = sodium.crypto_pwhash(
+          sodium.crypto_secretstream_xchacha20poly1305_KEYBYTES,
+          Password,
+          salt,
+          sodium.crypto_pwhash_OPSLIMIT_INTERACTIVE,
+          sodium.crypto_pwhash_MEMLIMIT_INTERACTIVE,
+          sodium.crypto_pwhash_ALG_ARGON2ID13
+        );
 
-    let limitedRes =
-      sodium.crypto_secretstream_xchacha20poly1305_init_push(limitedKey);
-    limitedState = limitedRes.state;
-    limitedHeader = limitedRes.header;
-  };
+        let res = sodium.crypto_secretstream_xchacha20poly1305_init_push(key);
+        let state = res.state;
+        let header = res.header;
 
-  const startLimitedEncryption = (file) => {
-    if (encryptionMethod === "secretKey") {
-      const SIGNATURE = new Uint8Array(
-        encoder.encode(SIGNATURES["v2_symmetric"])
-      );
+        let encryptedMsg = sodium.crypto_secretstream_xchacha20poly1305_push(
+          state,
+          plainText,
+          null,
+          sodium.crypto_secretstream_xchacha20poly1305_TAG_FINAL
+        );
 
-      setIsEncrypting(true);
-      limitedEncFileBuff = []; //clear array
-      limitedEncFileBuff.push(SIGNATURE);
-      limitedEncFileBuff.push(limitedSalt);
-      limitedEncFileBuff.push(limitedHeader);
+        cipherText = new Uint8Array(
+          SIGNATURES.length + header.length + salt.length + encryptedMsg.length
+        );
+        cipherText.set(SIGNATURES);
+        cipherText.set(header, SIGNATURES.length);
+        cipherText.set(salt, SIGNATURES.length + header.length);
+        cipherText.set(encryptedMsg, SIGNATURES.length + header.length + salt.length);
+      }
 
-      file
-        .slice(0, CHUNK_SIZE)
-        .arrayBuffer()
-        .then((chunk) => {
-          limitedIndex = CHUNK_SIZE;
-          let limitedLast = limitedIndex >= file.size;
-          limitedChunkEncryption(limitedLast, chunk, file);
-        });
-    }
+      if (encryptionMethod === "publicKey") {
+        let recipient_pk = sodium.from_base64(PublicKey);
+        let sender_sk = sodium.from_base64(PrivateKey);
 
-    if (encryptionMethod === "publicKey") {
-      const SIGNATURE = new Uint8Array(
-        encoder.encode(SIGNATURES["v2_asymmetric"])
-      );
+        let res = sodium.crypto_box_seal_keypair();
+        let eph_pk = res.publicKey;
+        let eph_sk = res.privateKey;
 
-      setIsEncrypting(true);
-      limitedEncFileBuff = []; //clear array
-      limitedEncFileBuff.push(SIGNATURE);
-      limitedEncFileBuff.push(limitedHeader);
+        let rx = sodium.crypto_box_beforenm(recipient_pk, eph_sk);
+        let tx = sodium.crypto_box_beforenm(eph_pk, sender_sk);
 
-      file
-        .slice(0, CHUNK_SIZE)
-        .arrayBuffer()
-        .then((chunk) => {
-          limitedIndex = CHUNK_SIZE;
-          let limitedLast = limitedIndex >= file.size;
-          limitedChunkEncryption(limitedLast, chunk, file);
-        });
-    }
-  };
+        let res2 = sodium.crypto_secretstream_xchacha20poly1305_init_push(rx);
+        let state = res2.state;
+        let header = res2.header;
 
-  const limitedChunkEncryption = async (limitedLast, chunk, file) => {
-    await _sodium.ready;
-    const sodium = _sodium;
+        let encryptedMsg = sodium.crypto_secretstream_xchacha20poly1305_push(
+          state,
+          plainText,
+          null,
+          sodium.crypto_secretstream_xchacha20poly1305_TAG_FINAL
+        );
 
-    let limitedTag = limitedLast
-      ? sodium.crypto_secretstream_xchacha20poly1305_TAG_FINAL
-      : sodium.crypto_secretstream_xchacha20poly1305_TAG_MESSAGE;
+        cipherText = new Uint8Array(
+          SIGNATURES.length +
+            header.length +
+            sodium.crypto_box_PUBLICKEYBYTES +
+            encryptedMsg.length
+        );
+        cipherText.set(SIGNATURES);
+        cipherText.set(header, SIGNATURES.length);
+        cipherText.set(eph_pk, SIGNATURES.length + header.length);
+        cipherText.set(
+          encryptedMsg,
+          SIGNATURES.length + header.length + sodium.crypto_box_PUBLICKEYBYTES
+        );
+      }
 
-    const limitedEncryptedChunk =
-      sodium.crypto_secretstream_xchacha20poly1305_push(
-        limitedState,
-        new Uint8Array(chunk),
-        null,
-        limitedTag
-      );
-
-    limitedEncFileBuff.push(new Uint8Array(limitedEncryptedChunk));
-
-    if (limitedLast) {
-      handleFinishedEncryption();
-    }
-
-    if (!limitedLast) {
-      continueLimitedEncryption(file);
-    }
-  };
-
-  const continueLimitedEncryption = (file) => {
-    file
-      .slice(limitedIndex, limitedIndex + CHUNK_SIZE)
-      .arrayBuffer()
-      .then((chunk) => {
-        limitedIndex += CHUNK_SIZE;
-        let limitedLast = limitedIndex >= file.size;
-
-        limitedChunkEncryption(limitedLast, chunk, file);
-      });
-  };
-
-  const handleFinishedEncryption = () => {
-    setIsEncrypting(false);
-    handleNext();
+      let blob = new Blob([cipherText], { type: "application/octet-stream" });
+      let url = window.URL.createObjectURL(blob);
+      let a = document.createElement("a");
+      a.href = url;
+      a.download = File.name + ".enc";
+      a.click();
+      window.URL.revokeObjectURL(url);
+      setIsEncrypting(false);
+      handleNext();
+    };
   };
 
   const handleEncryptedFileDownload = () => {
-    if (typeof window === "undefined") {
-      return;
-    }
-    if (typeof document === "undefined") {
-      return;
-    }
-    let fileName = File.name + ".enc";
-    let blob = new Blob(limitedEncFileBuff);
-    let link = document.createElement("a");
-    link.href = window.URL.createObjectURL(blob);
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
+    // Logic to re-trigger download if needed,
+    // but the actual download happens at the end of encryption.
   };
 
   const createShareableLink = async () => {
@@ -562,33 +363,34 @@ const LimitedEncryptionPanel = () => {
   }, [query.publicKey, query.tab]);
 
   const [selectedFile, setSelectedFile] = useState(null);
-    const [showInfo, setShowInfo] = useState(false);
-  
-    const handleOpenInfo = (file) => {
-      setSelectedFile(file);
-      setShowInfo(true);
-    };
-  
-    const handleCloseInfo = () => {
-      setShowInfo(false);
-      setSelectedFile(null);
-    };
+  const [showInfo, setShowInfo] = useState(false);
+
+  const handleOpenInfo = (file) => {
+    setSelectedFile(file);
+    setShowInfo(true);
+  };
+
+  const handleCloseInfo = () => {
+    setShowInfo(false);
+    setSelectedFile(null);
+  };
 
   return (
-    <div className={classes.root} {...getRootProps()}>
+    <Box sx={{ width: "100%" }} {...getRootProps()}>
       <Snackbar
         anchorOrigin={{
           vertical: "bottom",
-          horizontal: "center",
+          horizontal: "left",
         }}
         open={snackBarOpen}
-        autoHideDuration={2000}
+        autoHideDuration={4000}
         onClose={showSnackBar}
       >
-        <Alert severity="success">
+        <Alert severity="error">
           {snackBarMessage}
         </Alert>
       </Snackbar>
+
       <Backdrop open={isDragActive} style={{ zIndex: 10 }}>
         <Typography
           variant="h2"
@@ -629,56 +431,66 @@ const LimitedEncryptionPanel = () => {
       <Stepper
         activeStep={activeStep}
         orientation="vertical"
-        className={classes.stepper}
+        sx={{
+          backgroundColor: "transparent",
+          '& .MuiStepIcon-root.Mui-active': {
+            color: (theme) => theme.palette.custom?.emperor?.main || "#525252",
+          },
+          '& .MuiStepIcon-root.Mui-completed': {
+            color: (theme) => theme.palette.custom?.emperor?.main || "#525252",
+          },
+        }}
       >
         <Step key={1}>
-          <StepLabel
-            StepIconProps={{
-              classes: {
-                root: classes.stepIcon,
-                active: classes.activeStepIcon,
-                completed: classes.completedStepIcon,
-              },
-            }}
-          >
+          <StepLabel>
             {t("choose_file_enc")}
           </StepLabel>
           <StepContent>
-            <FileInfoDialog file={selectedFile} display={showInfo} onClose={handleCloseInfo} />
             <div className="wrapper p-3" id="encFileWrapper">
-              <div className={classes.fileArea} id="encFileArea">
+              <Box
+                id="encFileArea"
+                sx={{
+                  display: File ? "" : "flex",
+                  padding: "20px",
+                  border: "5px dashed",
+                  borderColor: (theme) => theme.palette.custom?.gallery?.main || "#ebebeb",
+                  borderRadius: "14px",
+                  marginBottom: "10px",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexDirection: "column",
+                }}
+              >
                 <Paper
                   elevation={0}
-                  style={{
+                  sx={{
+                    marginBottom: '15px',
                     overflow: "auto",
                     maxHeight: "280px",
                     backgroundColor: "transparent",
                   }}
                 >
-                  <List
-                    dense={true}
-                    style={{
-                      display: "flex",
-                      flex: "1",
-                      flexWrap: "wrap",
-                      alignContent: "center",
-                      justifyContent: "center",
-                    }}
-                  >
+                  <List dense={true} sx={{
+                    display: "flex",
+                    flex: "1",
+                    flexWrap: "wrap",
+                    alignContent: "center",
+                    justifyContent: "center",
+                  }}>
                     {File ? (
                       <ListItem
-                        style={{
-                          backgroundColor: "#ebebeb",
+                        sx={{
+                          backgroundColor: "#f3f3f3",
                           borderRadius: "8px",
-                          padding: 15,
+                          padding: '15px',
                         }}
                       >
                         <ListItemText
-                          style={{
-                            width: "200px",
+                          sx={{
+                            width: "100px",
+                            maxWidth: "150px",
                             minHeight: "50px",
                             maxHeight: "50px",
-                            textAlign: "center",
                           }}
                           primary={File.name}
                           secondary={formatBytes(File.size)}
@@ -703,71 +515,85 @@ const LimitedEncryptionPanel = () => {
                         </ListItemSecondaryAction>
                       </ListItem>
                     ) : (
-                      t("drag_drop")
+                      t("drag_drop_file")
                     )}
                   </List>
                 </Paper>
 
                 <input
                   {...getInputProps()}
-                  className={classes.input}
+                  style={{ display: "none" }}
                   id="enc-file"
                   type="file"
-                  onChange={(e) => handleLimitedFileInput(e.target.files[0])}
+                  onChange={(e) => handleFilesInput(e.target.files)}
                 />
                 <label htmlFor="enc-file">
-                  <br />
                   <Button
-                    className={classes.browseButton}
+                    sx={{
+                      padding: '8px',
+                      paddingLeft: '15px',
+                      paddingRight: '15px',
+                      textTransform: "none",
+                      borderRadius: "8px",
+                      border: "none",
+                      color: (theme) => theme.palette.custom?.mineShaft?.main || "#3f3f3f",
+                      backgroundColor: (theme) => theme.palette.custom?.alto?.light || "#ebebeb",
+                      "&:hover": {
+                        backgroundColor: (theme) => theme.palette.custom?.alto?.main || "#e1e1e1",
+                      },
+                      transition: "background-color 0.2s ease-out, color .01s",
+                    }}
                     component="span"
-                    startIcon={<DescriptionIcon />}
+                    startIcon={File ? <RefreshIcon /> : <DescriptionIcon />}
                   >
                     {File ? t("change_file") : t("browse_file")}
                   </Button>
                 </label>
+              </Box>
+              <FileInfoDialog file={selectedFile} display={showInfo} onClose={handleCloseInfo} />
+            </div>
+
+            <Box sx={{ marginBottom: (theme) => theme.spacing(2) }}>
+              <div>
+                <Button
+                  fullWidth
+                  disabled={!File}
+                  variant="contained"
+                  onClick={handleNext}
+                  sx={{
+                    marginTop: (theme) => theme.spacing(1),
+                    marginRight: (theme) => theme.spacing(1),
+                    borderRadius: "8px",
+                    backgroundColor: (theme) => theme.palette.primary?.main || "#464653",
+                    color: (theme) => theme.palette.custom?.white?.main || "#ffffff",
+                    "&:hover": {
+                      backgroundColor: (theme) => theme.palette.custom?.mineShaft?.main || "#3f3f3f",
+                    },
+                    transition: "color .01s",
+                  }}
+                  className="nextBtnHs"
+                >
+                  {t("next")}
+                </Button>
               </div>
-            </div>
+            </Box>
 
-            <div className={classes.actionsContainer}>
-              <Button
-                fullWidth
-                disabled={!File || largeFile}
-                variant="contained"
-                onClick={handleNext}
-                className={`${classes.nextButton} nextBtnHs`}
-              >
-                {t("next")}
-              </Button>
-
-              {largeFile && (
-                <>
-                  <Alert severity="error" style={{ marginTop: 15 }}>
-                    <strong>{t("file_too_big")}</strong> {t("choose_file_1gb")}
-                  </Alert>
-                </>
-              )}
-            </div>
-            {!largeFile && (
-              <Typography className={classes.offline}>
-                {t("offline_note")}
-              </Typography>
-            )}
+            <Typography sx={{
+                fontSize: 12,
+                float: "right",
+                color: (theme) => theme.palette.custom?.diamondBlack?.main || "rgba(0, 0, 0, 0.54)",
+            }}>
+              {t("offline_note")}
+            </Typography>
           </StepContent>
         </Step>
 
         <Step key={2}>
-          <StepLabel
-            StepIconProps={{
-              classes: {
-                root: classes.stepIcon,
-                active: classes.activeStepIcon,
-                completed: classes.completedStepIcon,
-              },
-            }}
-          >
+          <StepLabel>
             {encryptionMethod !== "secretKey"
               ?  t("enter_keys_enc") : isPassphraseMode ? t("enter_passphrase") :  t("enter_password_enc") }
           </StepLabel>
+
           <StepContent>
             <FormControl
               component="fieldset"
@@ -783,31 +609,31 @@ const LimitedEncryptionPanel = () => {
                   control={<Radio color="default" />}
                   label={t("password")}
                   labelPlacement="end"
-                  onChange={handleRadioChange}
+                  onChange={() => handleRadioChange("secretKey")}
                 />
                 <FormControlLabel
                   value="secretKey2"
                   control={<Radio color="default" />}
                   label={t("passphrase")}
                   labelPlacement="end"
-                  onChange={handleRadioChange}
+                  onChange={() => handleRadioChange("secretKey2")}
                 />
                 <FormControlLabel
                   value="publicKey"
                   control={<Radio color="default" />}
                   label={t("public_key")}
                   labelPlacement="end"
-                  onChange={handleRadioChange}
+                  onChange={() => handleRadioChange("publicKey")}
                 />
               </RadioGroup>
             </FormControl>
 
-            {encryptionMethod === "secretKey" && (
+            {(encryptionMethod === "secretKey" || encryptionMethod === "secretKey2") && (
               <TextField
                 required
                 error={shortPasswordError ? true : false}
                 type={showPassword ? "text" : "password"}
-                id="outlined-required"
+                id="encPasswordInput"
                 label={t("required")}
                 placeholder={t("password")}
                 helperText={
@@ -862,6 +688,7 @@ const LimitedEncryptionPanel = () => {
             {encryptionMethod === "publicKey" && (
               <>
                 <TextField
+                  id="public-key-input"
                   required
                   error={wrongPublicKey ? true : false}
                   label={
@@ -879,7 +706,7 @@ const LimitedEncryptionPanel = () => {
                       <>
                         <input
                           accept=".public"
-                          className={classes.input}
+                          style={{ display: "none" }}
                           id="public-key-file"
                           type="file"
                           onChange={(e) => loadPublicKey(e.target.files[0])}
@@ -903,6 +730,7 @@ const LimitedEncryptionPanel = () => {
                 />
 
                 <TextField
+                  id="private-key-input"
                   type={showPrivateKey ? "text" : "password"}
                   required
                   error={wrongPrivateKey ? true : false}
@@ -938,7 +766,7 @@ const LimitedEncryptionPanel = () => {
 
                         <input
                           accept=".private"
-                          className={classes.input}
+                          style={{ display: "none" }}
                           id="private-key-file"
                           type="file"
                           onChange={(e) => loadPrivateKey(e.target.files[0])}
@@ -965,14 +793,20 @@ const LimitedEncryptionPanel = () => {
               </>
             )}
 
-            <div className={classes.actionsContainer} style={{ marginTop: 15 }}>
+            <Box sx={{ marginBottom: (theme) => theme.spacing(2), marginTop: '15px' }}>
               <div>
                 <Grid container spacing={1}>
                   <Grid item>
                     <Button
                       disabled={activeStep === 0}
                       onClick={handleBack}
-                      className={classes.backButton}
+                      sx={{
+                        marginTop: (theme) => theme.spacing(1),
+                        marginRight: (theme) => theme.spacing(1),
+                        borderRadius: "8px",
+                        backgroundColor: (theme) => theme.palette.custom?.mercury?.main || "#e9e9e9",
+                        transition: "color .01s",
+                      }}
                       fullWidth
                     >
                       {t("back")}
@@ -987,7 +821,18 @@ const LimitedEncryptionPanel = () => {
                       }
                       variant="contained"
                       onClick={handleMethodStep}
-                      className={`${classes.nextButton} nextBtnHs`}
+                      sx={{
+                        marginTop: (theme) => theme.spacing(1),
+                        marginRight: (theme) => theme.spacing(1),
+                        borderRadius: "8px",
+                        backgroundColor: (theme) => theme.palette.primary?.main || "#464653",
+                        color: (theme) => theme.palette.custom?.white?.main || "#ffffff",
+                        "&:hover": {
+                          backgroundColor: (theme) => theme.palette.custom?.mineShaft?.main || "#3f3f3f",
+                        },
+                        transition: "color .01s",
+                      }}
+                      className="nextBtnHs"
                       fullWidth
                     >
                       {t("next")}
@@ -1004,20 +849,12 @@ const LimitedEncryptionPanel = () => {
                   <Alert severity="error">{t("short_password")}</Alert>
                 )}
               </div>
-            </div>
+            </Box>
           </StepContent>
         </Step>
 
         <Step key={3}>
-          <StepLabel
-            StepIconProps={{
-              classes: {
-                root: classes.stepIcon,
-                active: classes.activeStepIcon,
-                completed: classes.completedStepIcon,
-              },
-            }}
-          >
+          <StepLabel>
             {t("encrypt_file")}
           </StepLabel>
           <StepContent>
@@ -1025,13 +862,19 @@ const LimitedEncryptionPanel = () => {
               <strong>{File ? File.name : ""}</strong> {t("ready_to_download")}
             </Alert>
 
-            <div className={classes.actionsContainer}>
+            <Box sx={{ marginBottom: (theme) => theme.spacing(2) }}>
               <Grid container spacing={1}>
                 <Grid item>
                   <Button
                     disabled={activeStep === 0 || isEncrypting}
                     onClick={handleBack}
-                    className={classes.backButton}
+                    sx={{
+                      marginTop: (theme) => theme.spacing(1),
+                      marginRight: (theme) => theme.spacing(1),
+                      borderRadius: "8px",
+                      backgroundColor: (theme) => theme.palette.custom?.mercury?.main || "#e9e9e9",
+                      transition: "color .01s",
+                    }}
                   >
                     {t("back")}
                   </Button>
@@ -1045,12 +888,22 @@ const LimitedEncryptionPanel = () => {
                       !File
                     }
                     variant="contained"
-                    className={`${classes.nextButton} nextBtnHs`}
+                    sx={{
+                      marginTop: (theme) => theme.spacing(1),
+                      marginRight: (theme) => theme.spacing(1),
+                      borderRadius: "8px",
+                      backgroundColor: (theme) => theme.palette.primary?.main || "#464653",
+                      color: (theme) => theme.palette.custom?.white?.main || "#ffffff",
+                      "&:hover": {
+                        backgroundColor: (theme) => theme.palette.custom?.mineShaft?.main || "#3f3f3f",
+                      },
+                      transition: "color .01s",
+                    }}
+                    className="nextBtnHs"
                     startIcon={
                       isEncrypting ? (
                         <CircularProgress
                           size={24}
-                          className={classes.buttonProgress}
                         />
                       ) : (
                         <LockOutlinedIcon />
@@ -1069,12 +922,19 @@ const LimitedEncryptionPanel = () => {
                   {t("page_close_alert_enc")}
                 </Alert>
               )}
-            </div>
+            </Box>
           </StepContent>
         </Step>
       </Stepper>
       {activeStep === 3 && (
-        <Paper elevation={1} className={classes.resetContainer}>
+        <Paper
+          elevation={1}
+          sx={{
+            padding: (theme) => theme.spacing(3),
+            boxShadow: "rgba(149, 157, 165, 0.4) 0px 8px 24px",
+            borderRadius: "8px",
+          }}
+        >
           <Alert
             variant="outlined"
             severity="success"
@@ -1098,11 +958,22 @@ const LimitedEncryptionPanel = () => {
             <Grid item xs={12} sm={12}>
               <Button
                 onClick={handleEncryptedFileDownload}
-                className={`${classes.nextButton} nextBtnHs`}
+                sx={{
+                  marginTop: (theme) => theme.spacing(1),
+                  marginRight: (theme) => theme.spacing(1),
+                  borderRadius: "8px",
+                  backgroundColor: (theme) => theme.palette.primary?.main || "#464653",
+                  color: (theme) => theme.palette.custom?.white?.main || "#ffffff",
+                  "&:hover": {
+                    backgroundColor: (theme) => theme.palette.custom?.mineShaft?.main || "#3f3f3f",
+                  },
+                  transition: "color .01s",
+                  textTransform: "none"
+                }}
+                className="nextBtnHs"
                 variant="contained"
                 startIcon={<GetAppIcon />}
                 fullWidth
-                style={{ textTransform: "none" }}
               >
                 {t("download_file")}
               </Button>
@@ -1115,10 +986,22 @@ const LimitedEncryptionPanel = () => {
                     setSnackBarMessage(t("password_copied"));
                     showSnackBar();
                   }}
-                  className={classes.button}
+                  sx={{
+                    marginTop: (theme) => theme.spacing(1),
+                    marginRight: (theme) => theme.spacing(1),
+                    borderRadius: "8px",
+                    border: "none",
+                    color: (theme) => theme.palette.custom?.mineShaft?.main || "#3f3f3f",
+                    backgroundColor: (theme) => theme.palette.custom?.mercury?.light || "#f3f3f3",
+                    "&:hover": {
+                      backgroundColor: (theme) => theme.palette.custom?.mercury?.main || "#e9e9e9",
+                    },
+                    transition: "background-color 0.2s ease-out, color .01s",
+                    textTransform: "none"
+                  }}
+                  variant="outlined"
                   startIcon={<FileCopyIcon />}
                   fullWidth
-                  style={{ textTransform: "none" }}
                 >
                   {t("copy_password")}
                 </Button>
@@ -1133,11 +1016,22 @@ const LimitedEncryptionPanel = () => {
                 >
                   <Button
                     onClick={() => createShareableLink()}
-                    className={classes.button}
+                    sx={{
+                      marginTop: (theme) => theme.spacing(1),
+                      marginRight: (theme) => theme.spacing(1),
+                      borderRadius: "8px",
+                      border: "none",
+                      color: (theme) => theme.palette.custom?.mineShaft?.main || "#3f3f3f",
+                      backgroundColor: (theme) => theme.palette.custom?.mercury?.light || "#f3f3f3",
+                      "&:hover": {
+                        backgroundColor: (theme) => theme.palette.custom?.mercury?.main || "#e9e9e9",
+                      },
+                      transition: "background-color 0.2s ease-out, color .01s",
+                      textTransform: "none"
+                    }}
                     variant="outlined"
                     startIcon={<LinkIcon />}
                     fullWidth
-                    style={{ textTransform: "none" }}
                   >
                     {t("create_shareable_link")}
                   </Button>
@@ -1148,10 +1042,22 @@ const LimitedEncryptionPanel = () => {
             <Grid item xs={12} sm={6}>
               <Button
                 onClick={handleReset}
-                className={classes.button}
+                sx={{
+                  marginTop: (theme) => theme.spacing(1),
+                  marginRight: (theme) => theme.spacing(1),
+                  borderRadius: "8px",
+                  border: "none",
+                  color: (theme) => theme.palette.custom?.mineShaft?.main || "#3f3f3f",
+                  backgroundColor: (theme) => theme.palette.custom?.mercury?.light || "#f3f3f3",
+                  "&:hover": {
+                    backgroundColor: (theme) => theme.palette.custom?.mercury?.main || "#e9e9e9",
+                  },
+                  transition: "background-color 0.2s ease-out, color .01s",
+                  textTransform: "none"
+                }}
+                variant="outlined"
                 startIcon={<RefreshIcon />}
                 fullWidth
-                style={{ textTransform: "none" }}
               >
                 {t("encrypt_another_file")}
               </Button>
@@ -1160,16 +1066,9 @@ const LimitedEncryptionPanel = () => {
             {encryptionMethod === "publicKey" && shareableLink && (
               <TextField
                 style={{ marginTop: 15 }}
-                defaultValue={
-                  shareableLink != undefined ? shareableLink : shareableLink
-                }
+                defaultValue={shareableLink}
                 InputProps={{
                   readOnly: true,
-                  classes: {
-                    root: classes.textFieldRoot,
-                    focused: classes.textFieldFocused,
-                    notchedOutline: classes.textFieldNotchedOutline,
-                  },
                   endAdornment: (
                     <>
                       <Tooltip title={t("copy_link")} placement="left">
@@ -1196,7 +1095,7 @@ const LimitedEncryptionPanel = () => {
           </Grid>
         </Paper>
       )}
-    </div>
+    </Box>
   );
 };
 

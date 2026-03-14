@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { makeStyles } from "@mui/styles";
 import {Alert,AlertTitle} from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import Collapse from "@mui/material/Collapse";
@@ -17,56 +16,7 @@ import Box from '@mui/material/Box';
 import { getTranslations as t } from "../../locales";
 import QuickResponseCode from "./QuickResponseCode";
 
-const useStyles = makeStyles((theme) => ({
-  root: {
-    marginTop: 50,
-    width: "100%",
-    "& > * + *": {
-      marginTop: theme.spacing(2),
-    },
-  },
-  generateNowText: {
-    float: "right",
-    color: theme.palette.custom.mountainMist.main,
-    cursor: "pointer",
-    textDecoration: "underline",
-    marginLeft: 4,
-  },
-  caption: {
-    float: "right",
-    color: theme.palette.custom.mountainMist.main,
-  },
-  keyCaption: {
-    float: "left",
-    color: theme.palette.custom.mountainMist.main,
-    marginLeft: 4,
-    "&:hover": {
-      cursor: "pointer",
-      textDecoration: "underline",
-    },
-  },
-  button: {
-    marginTop: theme.spacing(1),
-    marginRight: theme.spacing(1),
-    borderRadius: "8px",
-    border: "none",
-    color: theme.palette.custom.denim.main,
-    backgroundColor: theme.palette.custom.hawkesBlue.light,
-    "&:hover": {
-      backgroundColor: theme.palette.custom.hawkesBlue.main,
-    },
-    transition: "background-color 0.2s ease-out",
-    transition: "color .01s",
-  },
-  alertContainer: {
-    padding: theme.spacing(3),
-    boxShadow: "rgba(149, 157, 165, 0.4) 0px 8px 24px",
-    borderRadius: "8px",
-  },
-}));
-
 const KeysGeneration = (props) => {
-  const classes = useStyles();
   const [open, setOpen] = useState(false);
 
   const [PublicKey, setPublicKey] = useState();
@@ -110,10 +60,20 @@ const KeysGeneration = (props) => {
   return (
     <>
     {!props.opened &&
-      <div>
+      <Box sx={{
+          "& > * + *": {
+            marginTop: (theme) => theme.spacing(2),
+          },
+      }}>
         <Typography
           variant="caption"
-          className={classes.generateNowText}
+          sx={{
+            float: "right",
+            color: (theme) => theme.palette.custom?.mountainMist?.main || "#9791a1",
+            cursor: "pointer",
+            textDecoration: "underline",
+            marginLeft: '4px',
+          }}
           onClick={() => {
             setOpen(true);
           }}
@@ -121,22 +81,46 @@ const KeysGeneration = (props) => {
           {t("generate_now_button")}
         </Typography>
 
-        <Typography variant="caption" className={classes.caption}>
+        <Typography
+          variant="caption"
+          sx={{
+            float: "right",
+            color: (theme) => theme.palette.custom?.mountainMist?.main || "#9791a1",
+          }}
+        >
           {t("key_pair_question")}
         </Typography>
 
         <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
           <a href="/about/#why-need-private-key" target="_blank">
-            <Typography variant="caption" className={classes.keyCaption}>
+            <Typography
+              variant="caption"
+              sx={{
+                float: "left",
+                color: (theme) => theme.palette.custom?.mountainMist?.main || "#9791a1",
+                marginLeft: '4px',
+                "&:hover": {
+                  cursor: "pointer",
+                  textDecoration: "underline",
+                },
+              }}
+            >
               {t('why_need_private_key')}
             </Typography>
           </a>
         </Box>
-      </div>
+      </Box>
     }
-      <div className={classes.root}>
+      <Box sx={{ marginTop: '50px', width: "100%" }}>
         <Collapse in={open || props.opened}>
-          <Paper elevation={0} className={classes.alertContainer}>
+          <Paper
+            elevation={0}
+            sx={{
+              padding: (theme) => theme.spacing(3),
+              boxShadow: "rgba(149, 157, 165, 0.4) 0px 8px 24px",
+              borderRadius: "8px",
+            }}
+          >
             <Alert
               variant="outlined"
               severity="info"
@@ -240,11 +224,23 @@ const KeysGeneration = (props) => {
               <Grid item xs={12} sm={6}>
                 <Button
                   onClick={generateKeys}
-                  className={`${classes.button} keyPairGenerateBtn`}
+                  sx={{
+                    marginTop: (theme) => theme.spacing(1),
+                    marginRight: (theme) => theme.spacing(1),
+                    borderRadius: "8px",
+                    border: "none",
+                    color: (theme) => theme.palette.custom?.denim?.main || "#1976d2",
+                    backgroundColor: (theme) => theme.palette.custom?.hawkesBlue?.light || "#e3f2fd",
+                    "&:hover": {
+                      backgroundColor: (theme) => theme.palette.custom?.hawkesBlue?.main || "#d0e5f5",
+                    },
+                    transition: "background-color 0.2s ease-out, color .01s",
+                    textTransform: "none"
+                  }}
+                  className="keyPairGenerateBtn"
                   variant="outlined"
                   startIcon={PrivateKey && <CachedIcon />}
                   fullWidth
-                  style={{ textTransform: "none" }}
                 >
                   {generateBtnText}
                 </Button>
@@ -252,7 +248,7 @@ const KeysGeneration = (props) => {
             </Grid>
           </Paper>
         </Collapse>
-      </div>
+      </Box>
     </>
   );
 };

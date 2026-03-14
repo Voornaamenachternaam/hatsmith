@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { makeStyles } from "@mui/styles";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
@@ -12,18 +11,8 @@ import Language from "../config/Language";
 import { DarkMode } from "../config/Theme";
 import { getTranslations as t } from "../../locales";
 import Alert from "@mui/material/Alert";
-const useStyles = makeStyles((theme) => ({
-  topScrollPaper: {
-    alignItems: "start",
-    marginTop: "20vh",
-  },
-  topPaperScrollBody: {
-    verticalAlign: "middle",
-  },
-}));
 
 const Settings = () => {
-  const classes = useStyles();
   const [open, setOpen] = useState(false);
 
   const handleClickOpen = () => {
@@ -50,9 +39,14 @@ const Settings = () => {
         PaperProps={{
           elevation: 0,
         }}
-        classes={{
-          scrollPaper: classes.topScrollPaper,
-          paperScrollBody: classes.topPaperScrollBody,
+        sx={{
+          '& .MuiDialog-scrollPaper': {
+            alignItems: "start",
+            marginTop: "20vh",
+          },
+          '& .MuiDialog-container': {
+             verticalAlign: "middle",
+          }
         }}
       >
         <DialogTitle id="alert-dialog-title">{t('settings')}</DialogTitle>
@@ -63,7 +57,6 @@ const Settings = () => {
 
           <Language />
           <Alert
-          className={classes.formControl}
           severity="info"
           action={
             <Button

@@ -1,28 +1,22 @@
-import { makeStyles } from "@mui/styles";
 import NavAppBar from "../components/AppBar";
 import Hero from "../components/Hero";
 import LimitedPanels from "../components/limited/LimitedPanels";
 import Footer from "../components/Footer";
-
-const useStyles = makeStyles((theme) => ({
-  root: {
-    backgroundColor: theme.palette.custom?.alabaster?.main || "#fff",
-    minHeight: "100vh",
-    display: "flex",
-    flexDirection: "column",
-  },
-}));
+import Box from "@mui/material/Box";
 
 const LimitedContainer = () => {
-  const classes = useStyles();
-
   return (
-    <div className={classes.root}>
+    <Box sx={{
+        backgroundColor: (theme) => theme.palette.custom?.alabaster?.main || "#fff",
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+      }}>
       <NavAppBar />
       <Hero />
       <LimitedPanels />
       <Footer />
-    </div>
+    </Box>
   );
 };
 

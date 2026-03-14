@@ -15,7 +15,6 @@ import ListItemText from "@mui/material/ListItemText";
 import MenuIcon from "@mui/icons-material/Menu";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
-import { makeStyles, useTheme } from "@mui/styles";
 import Link from "next/link";
 import Container from "@mui/material/Container";
 import Button from "@mui/material/Button";
@@ -33,10 +32,10 @@ import HistoryIcon from "@mui/icons-material/History";
 import prism from "prismjs";
 import Settings from "../src/components/Settings";
 import { ThemeProvider as MuiThemeProvider } from "@mui/system";
-import { ThemeProvider as StylesThemeProvider } from "@mui/styles";
 import { Theme, checkTheme } from "../src/config/Theme";
 import locales from "../locales/locales";
 import { getTranslations as t } from "../locales";
+import Box from "@mui/material/Box";
 const drawerWidth = 240;
 
 marked.setOptions({
@@ -49,183 +48,7 @@ marked.setOptions({
   },
 });
 
-const useStyles = makeStyles((theme) => ({
-  root: {
-    backgroundColor: theme.palette.custom.alabaster.main,
-    minHeight: "100vh",
-  },
-  drawer: {
-    [theme.breakpoints.down("lg")]: {
-      display: "none",
-    },
-  },
-  appBar: {
-    backgroundColor: theme.palette.custom.alabaster.main,
-    [theme.breakpoints.up("sm")]: {
-      width: "100%",
-      marginLeft: drawerWidth,
-      zIndex: theme.zIndex.drawer - 1,
-    },
-  },
-
-  logo: {
-    flexGrow: 1,
-    marginTop: 5,
-  },
-  button: {
-    textTransform: "none",
-    color: theme.palette.custom.diamondBlack.main,
-  },
-
-  menuButton: {
-    marginRight: theme.spacing(2),
-    [theme.breakpoints.up("xl")]: {
-      display: "none",
-    },
-  },
-  // necessary for content to be below app bar
-  toolbar: theme.mixins.toolbar,
-  drawerPaper: {
-    width: drawerWidth,
-  },
-  content: {
-    padding: theme.spacing(3),
-    marginTop: "20px",
-
-    "& h1": {
-      marginTop: 20,
-      color: theme.palette.custom.mineShaft.main,
-      borderRadius: "8px",
-      paddingBottom: 15,
-      "& a": {
-        textDecoration: "none",
-        fontWeight: "bold",
-        fontSize: 40,
-        letterSpacing: "1px",
-        borderBottom: "1px solid #000",
-      },
-    },
-
-    "& h2": {
-      color: theme.palette.custom.mineShaft.main,
-      fontSize: "26px",
-      paddingTop: 20,
-      paddingBottom: 20,
-      fontWeight: "700",
-    },
-
-    "& h3": {
-      color: theme.palette.custom.mineShaft.main,
-      fontSize: "24px",
-      paddingTop: 20,
-      paddingBottom: 20,
-      fontWeight: "700",
-    },
-
-    "& a": {
-      color: theme.palette.custom.mineShaft.main,
-    },
-
-    "& p": {
-      fontSize: "17px",
-      color: theme.palette.custom.mineShaft.main,
-      lineHeight: 2,
-      "& code": {
-        backgroundColor: "#f1f1f1",
-        wordWrap: "break-word",
-        fontFamily: "inherit",
-        paddingRight: 7,
-        paddingLeft: 7,
-        borderRadius: "3px",
-      },
-    },
-
-    "& li": {
-      padding: 2.5,
-      fontSize: "18px",
-      color: theme.palette.custom.mineShaft.main,
-      "& a": {
-        textDecoration: "none",
-        letterSpacing: "0.5px",
-        borderBottom: "1px solid #000",
-      },
-    },
-
-    "& hr": {
-      backgroundColor: theme.palette.custom.mercury.main,
-      border: "none",
-      height: "1.5px",
-      marginTop: 20,
-      marginBottom: 30,
-    },
-
-    "& ul": {
-      paddingLeft: 25,
-      paddingBottom: 15,
-      fontSize: "16px",
-      "& code": {
-        backgroundColor: "#f1f1f1",
-        wordWrap: "break-word",
-        fontFamily: "inherit",
-        paddingRight: 7,
-        paddingLeft: 7,
-        borderRadius: "3px",
-      },
-    },
-
-    "& ol": {
-      paddingLeft: 25,
-      paddingBottom: 15,
-      fontSize: "16px",
-      "& code": {
-        backgroundColor: "#f1f1f1",
-        wordWrap: "break-word",
-        fontFamily: "inherit",
-        paddingRight: 7,
-        paddingLeft: 7,
-        borderRadius: "3px",
-      },
-    },
-
-    "& pre": {
-      background: "rgb(235, 235, 235)",
-      padding: "13px",
-      marginTop: "-5px",
-      marginBottom: "20px",
-      lineHeight: "1.3",
-      fontSize: "14px",
-      borderRadius: "3px",
-      overflow: "auto",
-      "& code": {
-        color: theme.palette.custom.mineShaft.main,
-      },
-    },
-
-    "& .codeBox": {
-      "& pre": {
-        background: "#2E3440",
-        "& code": {
-          color: "#f8f8f2",
-        },
-      },
-    },
-
-    "& blockquote": {
-      backgroundColor: "#f1f1f1",
-      marginTop: "15px",
-      color: "#535a60",
-      borderLeft: "5px solid #c8ccd0",
-      marginBottom: 20,
-      "& p": {
-        padding: 10,
-      },
-    },
-  },
-}));
-
 export default function About(props) {
-  const classes = useStyles();
-  const theme = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [docContent, setDocContent] = useState("");
 
@@ -281,8 +104,8 @@ export default function About(props) {
   };
 
   const drawer = (
-    <div>
-      <div className={classes.toolbar} />
+    <Box>
+      <Box sx={(theme) => theme.mixins.toolbar} />
 
       <List>
         <ListItem button component="a">
@@ -313,30 +136,43 @@ export default function About(props) {
           </div>
         ))}
       </List>
-    </div>
+    </Box>
   );
   return (
     <MuiThemeProvider theme={Theme}>
-      <StylesThemeProvider theme={Theme}>
-      <div className={classes.root}>
+      <Box sx={{
+        backgroundColor: (theme) => theme.palette.custom?.alabaster?.main || "#fafafa",
+        minHeight: "100vh",
+      }}>
         <CssBaseline />
 
         <AppBar
           color="transparent"
           position="fixed"
-          className={classes.appBar}
+          sx={{
+            backgroundColor: (theme) => theme.palette.custom?.alabaster?.main || "#fafafa",
+            width: "100%",
+            zIndex: (theme) => theme.zIndex.drawer - 1,
+          }}
           elevation={0}
         >
           <Container maxWidth="lg">
             <Toolbar>
 
-              <Typography variant="h6" className={classes.logo}>
+              <Typography variant="h6" sx={{ flexGrow: 1, marginTop: '5px' }}>
                 <a href="/">
                   <img src="/assets/images/logo_new.png" alt="logo" width="40" />
                 </a>
               </Typography>
 
-              <Button color="inherit" href="/" className={classes.button}>
+              <Button
+                color="inherit"
+                href="/"
+                sx={{
+                  textTransform: "none",
+                  color: (theme) => theme.palette.custom?.diamondBlack?.main || "rgba(0, 0, 0, 0.54)",
+                }}
+              >
                 {t('home')}
               </Button>
 
@@ -354,20 +190,154 @@ export default function About(props) {
         </AppBar>
 
         
-        <main className={classes.content}>
+        <Box
+          component="main"
+          sx={{
+            padding: (theme) => theme.spacing(3),
+            marginTop: "20px",
+
+            "& h1": {
+              marginTop: '20px',
+              color: (theme) => theme.palette.custom?.mineShaft?.main || "#3f3f3f",
+              borderRadius: "8px",
+              paddingBottom: '15px',
+              "& a": {
+                textDecoration: "none",
+                fontWeight: "bold",
+                fontSize: '40px',
+                letterSpacing: "1px",
+                borderBottom: "1px solid #000",
+              },
+            },
+
+            "& h2": {
+              color: (theme) => theme.palette.custom?.mineShaft?.main || "#3f3f3f",
+              fontSize: "26px",
+              paddingTop: '20px',
+              paddingBottom: '20px',
+              fontWeight: "700",
+            },
+
+            "& h3": {
+              color: (theme) => theme.palette.custom?.mineShaft?.main || "#3f3f3f",
+              fontSize: "24px",
+              paddingTop: '20px',
+              paddingBottom: '20px',
+              fontWeight: "700",
+            },
+
+            "& a": {
+              color: (theme) => theme.palette.custom?.mineShaft?.main || "#3f3f3f",
+            },
+
+            "& p": {
+              fontSize: "17px",
+              color: (theme) => theme.palette.custom?.mineShaft?.main || "#3f3f3f",
+              lineHeight: 2,
+              "& code": {
+                backgroundColor: "#f1f1f1",
+                wordWrap: "break-word",
+                fontFamily: "inherit",
+                paddingRight: '7px',
+                paddingLeft: '7px',
+                borderRadius: "3px",
+              },
+            },
+
+            "& li": {
+              padding: '2.5px',
+              fontSize: "18px",
+              color: (theme) => theme.palette.custom?.mineShaft?.main || "#3f3f3f",
+              "& a": {
+                textDecoration: "none",
+                letterSpacing: "0.5px",
+                borderBottom: "1px solid #000",
+              },
+            },
+
+            "& hr": {
+              backgroundColor: (theme) => theme.palette.custom?.mercury?.main || "#e9e9e9",
+              border: "none",
+              height: "1.5px",
+              marginTop: '20px',
+              marginBottom: '30px',
+            },
+
+            "& ul": {
+              paddingLeft: '25px',
+              paddingBottom: '15px',
+              fontSize: "16px",
+              "& code": {
+                backgroundColor: "#f1f1f1",
+                wordWrap: "break-word",
+                fontFamily: "inherit",
+                paddingRight: '7px',
+                paddingLeft: '7px',
+                borderRadius: "3px",
+              },
+            },
+
+            "& ol": {
+              paddingLeft: '25px',
+              paddingBottom: '15px',
+              fontSize: "16px",
+              "& code": {
+                backgroundColor: "#f1f1f1",
+                wordWrap: "break-word",
+                fontFamily: "inherit",
+                paddingRight: '7px',
+                paddingLeft: '7px',
+                borderRadius: "3px",
+              },
+            },
+
+            "& pre": {
+              background: "rgb(235, 235, 235)",
+              padding: "13px",
+              marginTop: "-5px",
+              marginBottom: "20px",
+              lineHeight: "1.3",
+              fontSize: "14px",
+              borderRadius: "3px",
+              overflow: "auto",
+              "& code": {
+                color: (theme) => theme.palette.custom?.mineShaft?.main || "#3f3f3f",
+              },
+            },
+
+            "& .codeBox": {
+              "& pre": {
+                background: "#2E3440",
+                "& code": {
+                  color: "#f8f8f2",
+                },
+              },
+            },
+
+            "& blockquote": {
+              backgroundColor: "#f1f1f1",
+              marginTop: "15px",
+              color: "#535a60",
+              borderLeft: "5px solid #c8ccd0",
+              marginBottom: '20px',
+              "& p": {
+                padding: '10px',
+              },
+            },
+          }}
+        >
           <Container maxWidth="lg">
-            <div className={classes.toolbar} />
+            <Box sx={(theme) => theme.mixins.toolbar} />
 
             <div dangerouslySetInnerHTML={{ __html: marked(docContent) }}></div>
             <div
               dangerouslySetInnerHTML={{ __html: marked(props.changelog) }}
             ></div>
           </Container>
-        </main>
+        </Box>
 
         <Footer />
-      </div>
-      </StylesThemeProvider>
+      </Box>
     </MuiThemeProvider>
   );
 }

@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { makeStyles } from "@mui/styles";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
@@ -8,18 +7,7 @@ import Button from "@mui/material/Button";
 import { Alert, AlertTitle } from "@mui/material";
 import { getTranslations as t } from "../../locales";
 
-const useStyles = makeStyles((theme) => ({
-  topScrollPaper: {
-    alignItems: "start",
-    marginTop: "20vh",
-  },
-  topPaperScrollBody: {
-    verticalAlign: "middle",
-  },
-}));
-
 const CheckMultipleTabs = () => {
-  const classes = useStyles();
   const [open, setOpen] = useState(false);
 
   const handleOpen = () => {
@@ -59,9 +47,14 @@ const CheckMultipleTabs = () => {
       PaperProps={{
         elevation: 0,
       }}
-      classes={{
-        scrollPaper: classes.topScrollPaper,
-        paperScrollBody: classes.topPaperScrollBody,
+      sx={{
+        '& .MuiDialog-scrollPaper': {
+          alignItems: "start",
+          marginTop: "20vh",
+        },
+        '& .MuiDialog-container': {
+           verticalAlign: "middle",
+        }
       }}
     >
      

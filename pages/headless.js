@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import MainContainer from "../src/views/MainContainer";
 import LimitedContainer from "../src/views/LimitedContainer";
 import { ThemeProvider } from "@mui/system";
-import { ThemeProvider as StylesThemeProvider } from "@mui/styles";
 import { Theme } from "../src/config/Theme";
 import LoadingCom from "../src/components/Loading";
 import CheckMultipleTabs from "../src/config/CheckMultipleTabs";
@@ -53,16 +52,13 @@ const Home = () => {
   if (loading) {
     return (
       <ThemeProvider theme={Theme}>
-        <StylesThemeProvider theme={Theme}>
           <LoadingCom open={loading} />
-        </StylesThemeProvider>
       </ThemeProvider>
     );
   }
 
   return (
     <ThemeProvider theme={Theme}>
-      <StylesThemeProvider theme={Theme}>
       {swReg && browserSupport ? (
           <>
             <div
@@ -94,7 +90,6 @@ const Home = () => {
       <div style={{ display: "flex", justifyContent: "center", color: "grey", textAlign: "center" }}>
         <span className="text-center">Hatsmith is running in headless mode.</span>
       </div>
-      </StylesThemeProvider>
     </ThemeProvider>
   );
 };

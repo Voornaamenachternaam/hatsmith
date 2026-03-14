@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import PropTypes from "prop-types";
-import { makeStyles } from "@mui/styles";
 import AppBar from "@mui/material/AppBar";
 import Container from "@mui/material/Container";
 import Tabs from "@mui/material/Tabs";
@@ -9,12 +8,11 @@ import Tab from "@mui/material/Tab";
 import LimitedEncryptionPanel from "./LimitedEncryptionPanel";
 import LimitedDecryptionPanel from "./LimitedDecryptionPanel";
 import LimitedAlert from "./LimitedAlert";
-
 import { getTranslations as t } from "../../../locales";
+import { styled } from "@mui/system";
+import Box from "@mui/material/Box";
 
-import { styled as muiStyled } from "@mui/system";
-
-const StyledTabs = muiStyled((props) => (
+const StyledTabs = styled((props) => (
   <Tabs {...props} TabIndicatorProps={{ children: <span /> }} />
 ))({
   "& .MuiTabs-indicator": {
@@ -22,36 +20,15 @@ const StyledTabs = muiStyled((props) => (
   },
 });
 
-const StyledTab = muiStyled((props) => <Tab disableRipple {...props} />)(({ theme }) => ({
+const StyledTab = styled((props) => <Tab disableRipple {...props} />)(({ theme }) => ({
   textTransform: "none",
   padding: "8px",
   transition: "background-color 0.2s ease-out",
 
   "&.Mui-selected": {
-    backgroundColor: theme.palette.custom.white.main,
+    backgroundColor: theme.palette.custom?.white?.main || "#ffffff",
     boxShadow: "rgba(149, 157, 165, 0.2) 0px 8px 24px",
     borderRadius: "8px",
-  },
-}));
-
-const useStyles = makeStyles((theme) => ({
-  root: {
-    maxWidth: "768px",
-  },
-
-  bar: {
-    marginTop: 15,
-    backgroundColor: theme.palette.custom.gallery.main,
-    borderRadius: "8px",
-    padding: 8,
-  },
-
-  TabPanel: {
-    marginTop: 15,
-  },
-
-  tab: {
-    color: theme.palette.custom.emperor.main,
   },
 }));
 
@@ -59,7 +36,7 @@ function TabPanel(props) {
   const { children, value, index, ...other } = props;
 
   return (
-    <div
+    <Box
       role="tabpanel"
       hidden={value !== index}
       id={`simple-tabpanel-${index}`}
@@ -67,7 +44,7 @@ function TabPanel(props) {
       {...other}
     >
       {children}
-    </div>
+    </Box>
   );
 }
 
@@ -78,7 +55,6 @@ TabPanel.propTypes = {
 };
 
 export default function LimitedPanels() {
-  const classes = useStyles();
   const router = useRouter();
   const query = router.query;
   const [value, setValue] = useState(0);
@@ -105,31 +81,46 @@ export default function LimitedPanels() {
 
   return (
     <>
-      <Container className={classes.root}>
+      <Container sx={{ maxWidth: "768px !important" }}>
         <LimitedAlert />
-        <AppBar position="static" className={classes.bar} elevation={0}>
+        <AppBar
+          position="static"
+          sx={{
+            marginTop: '15px',
+            backgroundColor: (theme) => theme.palette.custom?.gallery?.main || "#ebebeb",
+            borderRadius: "8px",
+            padding: '8px',
+          }}
+          elevation={0}
+        >
           <StyledTabs
             value={value}
             onChange={handleChange}
             variant="fullWidth"
             centered
           >
-            <StyledTab label={encryption.label} className={classes.tab} />
-            <StyledTab label={decryption.label} className={classes.tab} />
+            <StyledTab
+              label={encryption.label}
+              sx={{ color: (theme) => theme.palette.custom?.emperor?.main || "#525252" }}
+            />
+            <StyledTab
+              label={decryption.label}
+              sx={{ color: (theme) => theme.palette.custom?.emperor?.main || "#525252" }}
+            />
           </StyledTabs>
         </AppBar>
 
         <TabPanel
           value={value}
           index={encryption.tab}
-          className={classes.TabPanel}
+          sx={{ marginTop: '15px' }}
         >
           <LimitedEncryptionPanel />
         </TabPanel>
         <TabPanel
           value={value}
           index={decryption.tab}
-          className={classes.TabPanel}
+          sx={{ marginTop: '15px' }}
         >
           <LimitedDecryptionPanel />
         </TabPanel>

@@ -1,30 +1,22 @@
 import { ThemeProvider } from "@mui/system";
-import { ThemeProvider as StylesThemeProvider } from "@mui/styles";
 import { Theme } from "../src/config/Theme";
 import NavAppBar from "../src/components/AppBar";
 import Footer from "../src/components/Footer";
 import Hero from "../src/components/Hero";
 import Container from "@mui/material/Container";
 import KeyPairGeneration from "../src/components/KeyPairGeneration";
-import { makeStyles } from "@mui/styles";
-import { Theme as hsTheme } from "../src/config/Theme";
-
-const useStyles = makeStyles((theme) => ({
-  page: {
-    backgroundColor: theme?.palette?.custom?.alabaster?.main || hsTheme.palette.custom.alabaster.main,
-    minHeight: "100vh",
-    display: "flex",
-    flexDirection: "column",
-  },
-}));
+import Box from "@mui/material/Box";
 
 const Generate = () => {
-  const classes = useStyles();
   return (
     <ThemeProvider theme={Theme}>
-      <StylesThemeProvider theme={Theme}>
-      <div
-        className={classes.page}
+      <Box
+        sx={{
+          backgroundColor: (theme) => theme.palette.custom?.alabaster?.main || "#fafafa",
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+        }}
       >
         <NavAppBar />
         <Hero />
@@ -37,8 +29,7 @@ const Generate = () => {
         </Container>
 
         <Footer />
-      </div>
-      </StylesThemeProvider>
+      </Box>
     </ThemeProvider>
   );
 };
