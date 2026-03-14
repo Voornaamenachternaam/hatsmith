@@ -32,7 +32,7 @@ import LiveHelpIcon from "@mui/icons-material/LiveHelp";
 import HistoryIcon from "@mui/icons-material/History";
 import prism from "prismjs";
 import Settings from "../src/components/Settings";
-import { ThemeProvider } from "@mui/material/styles";
+import { ThemeProvider as MuiThemeProvider } from "@mui/material/styles";
 import { ThemeProvider as StylesThemeProvider } from "@mui/styles";
 import { Theme, checkTheme } from "../src/config/Theme";
 import locales from "../locales/locales";
@@ -316,7 +316,7 @@ export default function About(props) {
     </div>
   );
   return (
-    <ThemeProvider theme={Theme}>
+    <MuiThemeProvider theme={Theme}>
       <StylesThemeProvider theme={Theme}>
       <div className={classes.root}>
         <CssBaseline />
@@ -368,7 +368,7 @@ export default function About(props) {
         <Footer />
       </div>
       </StylesThemeProvider>
-    </ThemeProvider>
+    </MuiThemeProvider>
   );
 }
 
