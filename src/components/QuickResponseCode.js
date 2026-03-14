@@ -1,38 +1,19 @@
 import { useState } from "react";
-import { makeStyles } from "@mui/styles";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
-import { IconButton, Tooltip, Button, TextField } from "@mui/material";
+import { IconButton, Tooltip, Button, TextField, Box } from "@mui/material";
 import { getTranslations as t } from "../../locales";
 import FileCopyIcon from "@mui/icons-material/FileCopy";
 import {QRCodeSVG} from 'qrcode.react';
 
-const useStyles = makeStyles((theme) => ({
-  form: {
-    display: "flex",
-    flexDirection: "column",
-    margin: "auto",
-    width: "fit-content",
-    marginBottom: 20,
-  },
-  topScrollPaper: {
-    alignItems: "start",
-    marginTop: "10vh",
-  },
-  topPaperScrollBody: {
-    verticalAlign: "middle",
-  },
-}));
-
 const QuickResponseCode = (props) => {
-  const classes = useStyles();
   const [open, setOpen] = useState(false);
 
-  let url =
-    window.location.origin + "/?tab=encryption&publicKey=" + props.publicKey;
+  let url = typeof window !== "undefined" ?
+    window.location.origin + "/?tab=encryption&publicKey=" + props.publicKey : "";
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -78,14 +59,22 @@ const QuickResponseCode = (props) => {
         PaperProps={{
           elevation: 0,
         }}
-        classes={{
-          scrollPaper: classes.topScrollPaper,
-          paperScrollBody: classes.topPaperScrollBody,
+        sx={{
+          '& .MuiDialog-container': {
+            alignItems: "start",
+            marginTop: "10vh",
+          },
         }}
       >
         <DialogTitle id="alert-dialog-title" />
         <DialogContent>
-          <div className={classes.form}>
+          <Box sx={{
+            display: "flex",
+            flexDirection: "column",
+            margin: "auto",
+            width: "fit-content",
+            marginBottom: '20px',
+          }}>
             <QRCodeSVG
               style={{ borderRadius: 8, marginTop:15, boxShadow: "0px 0px 35px 2px rgba(0,0,0,0.2)" }}
               value={url}
@@ -96,7 +85,7 @@ const QuickResponseCode = (props) => {
               includeMargin={true}
               renderAs={"canvas"}
               imageSettings={{
-                src: "/assets/icons/qr-logo_new.png",
+                src: "/assets/icons/qr-logo.png",
                 x: null,
                 y: null,
                 height: 40,
@@ -104,27 +93,20 @@ const QuickResponseCode = (props) => {
                 excavate: false,
               }}
             />
-          </div>
+          </Box>
 
           <DialogContentText>
-            <small>* {t("qr_code_note_one")}</small>
-            <br />
-            <small>* {t("qr_code_note_two")}</small>
-            <br />
-            <small>* {t("qr_code_note_three")}</small>
+            <Box component="small" sx={{ display: 'block' }}>* {t("qr_code_note_one")}</Box>
+            <Box component="small" sx={{ display: 'block' }}>* {t("qr_code_note_two")}</Box>
+            <Box component="small" sx={{ display: 'block' }}>* {t("qr_code_note_three")}</Box>
           </DialogContentText>
 
           {url && (
             <TextField
-              style={{ marginTop: 15 }}
-              defaultValue={url != undefined ? url : url}
+              sx={{ marginTop: '15px' }}
+              defaultValue={url}
               InputProps={{
                 readOnly: true,
-                classes: {
-                  root: classes.textFieldRoot,
-                  focused: classes.textFieldFocused,
-                  notchedOutline: classes.textFieldNotchedOutline,
-                },
                 endAdornment: (
                   <>
                     <Tooltip title={t("copy_link")} placement="left">

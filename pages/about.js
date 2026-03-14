@@ -7,16 +7,16 @@ import AppBar from "@mui/material/AppBar";
 import CssBaseline from "@mui/material/CssBaseline";
 import Divider from "@mui/material/Divider";
 import Drawer from "@mui/material/Drawer";
-import Hidden from "@mui/material/Hidden";
 import IconButton from "@mui/material/IconButton";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
+import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import MenuIcon from "@mui/icons-material/Menu";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
-import { makeStyles, useTheme } from "@mui/styles";
+import { styled } from "@mui/material/styles";
 import Link from "next/link";
 import Container from "@mui/material/Container";
 import Button from "@mui/material/Button";
@@ -33,10 +33,11 @@ import LiveHelpIcon from "@mui/icons-material/LiveHelp";
 import HistoryIcon from "@mui/icons-material/History";
 import prism from "prismjs";
 import Settings from "../src/components/Settings";
-import { ThemeProvider } from "@mui/styles";
-import { Theme, checkTheme } from "../src/config/Theme";
+import { Box } from "@mui/material";
+import { Theme, checkTheme, getCustom } from "../src/config/Theme";
 import locales from "../locales/locales";
 import { getTranslations as t } from "../locales";
+
 const drawerWidth = 240;
 
 marked.setOptions({
@@ -49,52 +50,28 @@ marked.setOptions({
   },
 });
 
-const useStyles = makeStyles((theme) => ({
-  root: {
-    backgroundColor: theme.palette.custom.alabaster.main,
-    minHeight: "100vh",
-  },
-  drawer: {
-    [theme.breakpoints.down("lg")]: {
-      display: "none",
-    },
-  },
-  appBar: {
-    backgroundColor: theme.palette.custom.alabaster.main,
-    [theme.breakpoints.up("sm")]: {
-      width: "100%",
-      marginLeft: drawerWidth,
-      zIndex: theme.zIndex.drawer - 1,
-    },
-  },
+const AboutRoot = styled('div')(({ theme }) => ({
+  display: 'flex',
+  backgroundColor: getCustom(theme).alabaster.main,
+  minHeight: "100vh",
+  flexDirection: "column",
+}));
 
-  logo: {
-    flexGrow: 1,
-    marginTop: 5,
-  },
-  button: {
-    textTransform: "none",
-    color: theme.palette.custom.diamondBlack.main,
-  },
+const MainWrapper = styled('div')(({ theme }) => ({
+  display: 'flex',
+  flex: 1,
+}));
 
-  menuButton: {
-    marginRight: theme.spacing(2),
-    [theme.breakpoints.up("xl")]: {
-      display: "none",
-    },
-  },
-  // necessary for content to be below app bar
-  toolbar: theme.mixins.toolbar,
-  drawerPaper: {
-    width: drawerWidth,
-  },
-  content: {
+const ContentContainer = styled(Container)(({ theme }) => {
+  const custom = getCustom(theme);
+  return {
     padding: theme.spacing(3),
     marginTop: "20px",
+    flexGrow: 1,
 
     "& h1": {
       marginTop: 20,
-      color: theme.palette.custom.mineShaft.main,
+      color: custom.mineShaft.main,
       borderRadius: "8px",
       paddingBottom: 15,
       "& a": {
@@ -102,12 +79,12 @@ const useStyles = makeStyles((theme) => ({
         fontWeight: "bold",
         fontSize: 40,
         letterSpacing: "1px",
-        borderBottom: "1px solid #000",
+        borderBottom: `1px solid ${custom.mineShaft.main}`,
       },
     },
 
     "& h2": {
-      color: theme.palette.custom.mineShaft.main,
+      color: custom.mineShaft.main,
       fontSize: "26px",
       paddingTop: 20,
       paddingBottom: 20,
@@ -115,7 +92,7 @@ const useStyles = makeStyles((theme) => ({
     },
 
     "& h3": {
-      color: theme.palette.custom.mineShaft.main,
+      color: custom.mineShaft.main,
       fontSize: "24px",
       paddingTop: 20,
       paddingBottom: 20,
@@ -123,12 +100,12 @@ const useStyles = makeStyles((theme) => ({
     },
 
     "& a": {
-      color: theme.palette.custom.mineShaft.main,
+      color: custom.mineShaft.main,
     },
 
     "& p": {
       fontSize: "17px",
-      color: theme.palette.custom.mineShaft.main,
+      color: custom.mineShaft.main,
       lineHeight: 2,
       "& code": {
         backgroundColor: "#f1f1f1",
@@ -143,16 +120,16 @@ const useStyles = makeStyles((theme) => ({
     "& li": {
       padding: 2.5,
       fontSize: "18px",
-      color: theme.palette.custom.mineShaft.main,
+      color: custom.mineShaft.main,
       "& a": {
         textDecoration: "none",
         letterSpacing: "0.5px",
-        borderBottom: "1px solid #000",
+        borderBottom: `1px solid ${custom.mineShaft.main}`,
       },
     },
 
     "& hr": {
-      backgroundColor: theme.palette.custom.mercury.main,
+      backgroundColor: custom.mercury.main,
       border: "none",
       height: "1.5px",
       marginTop: 20,
@@ -197,7 +174,7 @@ const useStyles = makeStyles((theme) => ({
       borderRadius: "3px",
       overflow: "auto",
       "& code": {
-        color: theme.palette.custom.mineShaft.main,
+        color: custom.mineShaft.main,
       },
     },
 
@@ -220,12 +197,10 @@ const useStyles = makeStyles((theme) => ({
         padding: 10,
       },
     },
-  },
-}));
+  };
+});
 
 export default function About(props) {
-  const classes = useStyles();
-  const theme = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [docContent, setDocContent] = useState("");
 
@@ -256,20 +231,13 @@ export default function About(props) {
       if (matches) {
         langResult = obj;
       } else {
-        //default en docs
         setDocContent(languages[0].content);
       }
     });
 
-    const getContent = async () => {
-      for (const key in langResult) {
-        if (key == "content") {
-          setDocContent(langResult[key]);
-        }
-      }
-    };
-
-    getContent();
+    if (langResult) {
+      setDocContent(langResult.content);
+    }
   }, [props.docs]);
 
   const handleDrawerToggle = () => {
@@ -277,16 +245,17 @@ export default function About(props) {
   };
 
   const handleClose = () => {
-    mobileOpen ? setMobileOpen(false) : null;
+    setMobileOpen(false);
   };
 
   const drawer = (
     <div>
-      <div className={classes.toolbar} />
-
+      <Toolbar />
       <List>
-        <ListItem button component="a">
-          <ListItemText primary="Hat.sh Documentation" />
+        <ListItem disablePadding>
+          <ListItemButton component="a" href="#">
+            <ListItemText primary="Hat.sh Documentation" />
+          </ListItemButton>
         </ListItem>
       </List>
 
@@ -303,109 +272,139 @@ export default function About(props) {
           { name: t("technical_details"), icon: <MenuBookIcon /> },
           { name: t("changelog"), icon: <HistoryIcon /> },
         ].map((text, index) => (
-          <div onClick={handleClose} key={index}>
-            <Link href={"#" + text.name.toLowerCase()} passHref>
-              <ListItem button>
+          <ListItem key={index} disablePadding>
+            <Link href={"#" + text.name.toLowerCase()} passHref legacyBehavior>
+              <ListItemButton onClick={handleClose}>
                 <ListItemIcon>{text.icon}</ListItemIcon>
                 <ListItemText primary={text.name} />
-              </ListItem>
+              </ListItemButton>
             </Link>
-          </div>
+          </ListItem>
         ))}
       </List>
     </div>
   );
+
   return (
-    // <ThemeProvider theme={Theme}>
-      <div className={classes.root}>
-        <CssBaseline />
+    <AboutRoot>
+      <CssBaseline />
 
-        <AppBar
-          color="transparent"
-          position="fixed"
-          className={classes.appBar}
-          elevation={0}
+      <AppBar
+        color="transparent"
+        position="fixed"
+        sx={{
+          backgroundColor: (theme) => getCustom(theme).alabaster.main,
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+        }}
+        elevation={0}
+      >
+        <Container maxWidth="lg">
+          <Toolbar>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              onClick={handleDrawerToggle}
+              sx={{ mr: 2, display: { xl: 'none' } }}
+            >
+              <MenuIcon />
+            </IconButton>
+
+            <Typography variant="h6" sx={{ flexGrow: 1, marginTop: '5px' }}>
+              <a href="/">
+                <img src="/assets/images/logo_new.png" alt="logo" width="40" />
+              </a>
+            </Typography>
+
+            <Button
+              color="inherit"
+              href="/"
+              sx={{
+                textTransform: "none",
+                color: (theme) => getCustom(theme).diamondBlack.main
+              }}
+            >
+              {t('home')}
+            </Button>
+
+            <IconButton
+              href="https://github.com/mrtechtroid/hatsmith"
+              target="_blank"
+              rel="noopener"
+            >
+              <GitHubIcon />
+            </IconButton>
+
+            <Settings />
+          </Toolbar>
+        </Container>
+      </AppBar>
+
+      <MainWrapper>
+        <Box
+          component="nav"
+          sx={{ width: { xl: drawerWidth }, flexShrink: { xl: 0 } }}
+          aria-label="mailbox folders"
         >
-          <Container maxWidth="lg">
-            <Toolbar>
+          {/* Mobile drawer */}
+          <Drawer
+            variant="temporary"
+            open={mobileOpen}
+            onClose={handleDrawerToggle}
+            ModalProps={{
+              keepMounted: true, // Better open performance on mobile.
+            }}
+            sx={{
+              display: { xs: 'block', xl: 'none' },
+              '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+            }}
+          >
+            {drawer}
+          </Drawer>
+          {/* Desktop drawer */}
+          <Drawer
+            variant="permanent"
+            sx={{
+              display: { xs: 'none', xl: 'block' },
+              '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+            }}
+            open
+          >
+            {drawer}
+          </Drawer>
+        </Box>
 
-              <Typography variant="h6" className={classes.logo}>
-                <a href="/">
-                  <img src="/assets/images/logo_new.png" alt="logo" width="40" />
-                </a>
-              </Typography>
-
-              <Button color="inherit" href="/" className={classes.button}>
-                {t('home')}
-              </Button>
-
-              <IconButton
-                href="https://github.com/sh-dv/hat.sh"
-                target="_blank"
-                rel="noopener"
-              >
-                <GitHubIcon />
-              </IconButton>
-
-              <Settings />
-            </Toolbar>
-          </Container>
-        </AppBar>
-
-        
-        <main className={classes.content}>
-          <Container maxWidth="lg">
-            <div className={classes.toolbar} />
-
+        <Box component="main" sx={{ flexGrow: 1, paddingTop: '64px' }}>
+          <ContentContainer maxWidth="lg">
+            <Box sx={{ minHeight: '1px' }} />
             <div dangerouslySetInnerHTML={{ __html: marked(docContent) }}></div>
-            <div
-              dangerouslySetInnerHTML={{ __html: marked(props.changelog) }}
-            ></div>
-          </Container>
-        </main>
-
-        <Footer />
-      </div>
-    // </ThemeProvider>
+            <div dangerouslySetInnerHTML={{ __html: marked(props.changelog) }}></div>
+          </ContentContainer>
+          <Footer />
+        </Box>
+      </MainWrapper>
+    </AboutRoot>
   );
 }
 
 About.propTypes = {
-  /**
-   * Injected by the documentation to work in an iframe.
-   * You won't need it on your project.
-   */
   window: PropTypes.func,
 };
 
 export async function getStaticProps() {
-  // Get files from the posts dir
-
   let docs = [];
-
-  {
-    Object.entries(locales).map(([code, name]) => {
-      let docFilePath = `locales/${code}/docs.md`;
-      let docFile;
-      try {
-        docFile = fs.readFileSync(
-          path.join(docFilePath),
-          "utf-8"
-        );
-      } catch (error) {
-        docFile = fs.readFileSync(
-          path.join(`locales/en_US/docs.md`),
-          "utf-8"
-        );
-      }
-      
-      let docStructure = { lang: code, content: docFile };
-      docs.push(docStructure);
-    });
-  }
-
+  Object.entries(locales).map(([code, name]) => {
+    let docFilePath = `locales/${code}/docs.md`;
+    let docFile;
+    try {
+      docFile = fs.readFileSync(path.join(docFilePath), "utf-8");
+    } catch (error) {
+      docFile = fs.readFileSync(path.join(`locales/en_US/docs.md`), "utf-8");
+    }
+    let docStructure = { lang: code, content: docFile };
+    docs.push(docStructure);
+  });
   const changelog = fs.readFileSync("CHANGELOG.md", "utf-8");
-
   return {
     props: {
       docs: docs,

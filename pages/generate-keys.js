@@ -1,41 +1,33 @@
-// import { ThemeProvider } from "@mui/styles";
-// import { Theme } from "../src/config/Theme";
 import NavAppBar from "../src/components/AppBar";
 import Footer from "../src/components/Footer";
 import Hero from "../src/components/Hero";
 import Container from "@mui/material/Container";
 import KeyPairGeneration from "../src/components/KeyPairGeneration";
-import { makeStyles } from "@mui/styles";
-
-const useStyles = makeStyles((theme) => ({
-  page: {
-    backgroundColor: theme.palette.custom?.alabaster?.main,
-    minHeight: "100vh",
-    display: "flex",
-    flexDirection: "column",
-  },
-}));
+import { Box } from "@mui/material";
+import { getCustom } from "../src/config/Theme";
 
 const Generate = () => {
-  const classes = useStyles();
   return (
-    // <ThemeProvider theme={Theme}>
-      <div
-        className={classes.page}
+      <Box
+        sx={{
+          backgroundColor: (theme) => getCustom(theme).alabaster.main,
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+        }}
       >
         <NavAppBar />
         <Hero />
         <Container
-          style={{
-            maxWidth: "768px",
+          sx={{
+            maxWidth: "768px !important",
           }}
         >
           <KeyPairGeneration opened={true} />
         </Container>
 
         <Footer />
-      </div>
-    // </ThemeProvider>
+      </Box>
   );
 };
 

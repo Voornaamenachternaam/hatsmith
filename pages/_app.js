@@ -1,15 +1,25 @@
 import Head from "next/head";
 import { getTranslations as t } from "../locales";
 import "../public/assets/styles/style.css";
-import { ThemeProvider, CssBaseline } from "@mui/styles";
+import { ThemeProvider } from "@mui/material/styles";
+import CssBaseline from "@mui/material/CssBaseline";
+import { CacheProvider } from '@emotion/react';
+import createEmotionCache from '../src/utils/createEmotionCache';
 import { Theme, checkTheme } from "../src/config/Theme";
-// import { makeStyles, useTheme } from "@mui/styles";
-//check wether the user prefers/chose dark theme
-checkTheme();
 
-function MyApp({ Component, pageProps }) {
+// Client-side cache, shared for the whole session of the user in the browser.
+const clientSideEmotionCache = createEmotionCache();
+
+//check wether the user prefers/chose dark theme
+if (typeof window !== 'undefined') {
+  checkTheme();
+}
+
+function MyApp(props) {
+  const { Component, emotionCache = clientSideEmotionCache, pageProps } = props;
+
   return (
-    <>
+    <CacheProvider value={emotionCache}>
       <Head>
         <title>
           {`Hatsmith - ${t("sub_title")}`}
@@ -38,9 +48,10 @@ function MyApp({ Component, pageProps }) {
         />
       </Head>
       <ThemeProvider theme={Theme}>
+        <CssBaseline />
         <Component {...pageProps} />
       </ThemeProvider>
-    </>
+    </CacheProvider>
   );
 }
 

@@ -1,27 +1,20 @@
-import { makeStyles } from "@mui/styles";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
 import { getTranslations as t } from "../../locales";
 import VersionBadge from "./VersionBadge";
-const useStyles = makeStyles((theme) => ({
-  heroTitle: {
-    color: theme.palette.custom.diamondBlack.main,
-    marginTop: 20,
-  },
-  heroSubTitle: {
-    color: theme.palette.custom.diamondBlack.main,
-  },
-}));
+import { getCustom } from "../config/Theme";
 
 export default function Hero() {
-  const classes = useStyles();
   return (
-    <Container maxWidth="sm" component="main" className={classes.heroContent}>
+    <Container maxWidth="sm" component="main">
       <Typography
         variant="h5"
         align="center"
         gutterBottom
-        className={classes.heroTitle}
+        sx={{
+          color: (theme) => getCustom(theme).diamondBlack.main,
+          marginTop: '20px',
+        }}
       >
         {"Hatsmith"}<VersionBadge />
       </Typography>
@@ -30,7 +23,9 @@ export default function Hero() {
         variant="subtitle1"
         align="center"
         component="p"
-        className={classes.heroSubTitle}
+        sx={{
+          color: (theme) => getCustom(theme).diamondBlack.main,
+        }}
       >
         {t('sub_title')}
         <br />

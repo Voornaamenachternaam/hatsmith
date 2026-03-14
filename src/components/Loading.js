@@ -1,73 +1,70 @@
-import { makeStyles } from "@mui/styles";
 import Backdrop from "@mui/material/Backdrop";
+import { styled, keyframes } from "@mui/system";
+import { getCustom } from "../config/Theme";
 
-const useStyles = makeStyles((theme) => ({
-  backDrop: {
-    backgroundColor: theme.palette.custom.alabaster.main,
-    opacity: "96%",
+const spin = keyframes`
+  100% {
+    transform: rotateZ(360deg);
+  }
+`;
+
+const bounce = keyframes`
+  0% { transform: translateY(0) }
+  50% { transform: translateY(-10px) }
+  100% { transform: translateY(0) }
+`;
+
+const StyledBackdrop = styled(Backdrop)(({ theme }) => {
+  const custom = getCustom(theme);
+  return {
+    backgroundColor: custom.alabaster.main,
+    opacity: "96% !important",
     zIndex: 10,
-    color: theme.palette.custom.mineShaft.main,
-  },
+    color: custom.mineShaft.main,
+  };
+});
 
-  loadingWrapper: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-  },
+const LoadingWrapper = styled('div')({
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  position: "relative",
+});
 
-  circle: {
-    position: "absolute",
-    width: 250,
-    height: 250,
-    border: "4px dashed",
-    borderRadius: "50%",
-    animation: "$spin 5s linear infinite",
-  },
-
-  loadingImg: {
-    position: "absolute",
-    width: 150,
-    animation: "$bounce 1.5s linear infinite"
-  },
-
-  loadingText: {
-    position: "absolute",
-    bottom: "15%",
-  },
-
-  "@keyframes spin": {
-    "100%": {
-      transform: "rotateZ(360deg)",
-    },
-  },
-
-  "@keyframes bounce": {
-    "0%": { transform: "translateY(0)" },
-    "50%": { transform: "translateY(-10px)" },
-    "100%": { transform: "translateY(0)" },
-  },
-
+const Circle = styled('div')(({ theme }) => ({
+  position: "absolute",
+  width: 250,
+  height: 250,
+  border: "4px dashed",
+  borderRadius: "50%",
+  animation: `${spin} 5s linear infinite`,
 }));
 
-const LoadingCom = (props) => {
-  const classes = useStyles();
-  
+const LoadingImg = styled('img')({
+  position: "absolute",
+  width: 150,
+  animation: `${bounce} 1.5s linear infinite`,
+});
 
+const LoadingText = styled('samp')({
+  position: "absolute",
+  bottom: "-60px", // Adjusted based on previous relative positioning
+});
+
+const LoadingCom = (props) => {
   return (
-    <Backdrop className={classes.backDrop} open={props.open}>
-      <div className={classes.loadingWrapper}>
-        <div className={classes.circle}></div>
-        <img
-          className={classes.loadingImg}
+    <StyledBackdrop open={props.open}>
+      <LoadingWrapper>
+        <Circle />
+        <LoadingImg
           src="/assets/images/logo_new.png"
           alt="Loading..."
         />
-
-        <samp className={classes.loadingText}>
+        <LoadingText>
             Loading...
-        </samp>
-      </div>
-    </Backdrop>
+        </LoadingText>
+      </LoadingWrapper>
+    </StyledBackdrop>
   );
 };
 

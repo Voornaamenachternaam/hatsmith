@@ -12,11 +12,12 @@
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
+    "@emotion/server": "^11.11.0",
     "@emotion/styled": "^11.14.0",
-    "@mui/icons-material": "^5.17.1",
-    "@mui/lab": "^5.0.0-alpha.176",
-    "@mui/material": "^5.17.1",
-    "@mui/styles": "^5.17.1",
+    "@mui/icons-material": "^7.3.9",
+    "@mui/lab": "^7.0.1-beta.23",
+    "@mui/material": "^7.3.9",
+    "@mui/system": "^7.3.9",
     "@zxcvbn-ts/core": "^3.0.4",
     "@zxcvbn-ts/language-common": "^3.0.4",
     "@zxcvbn-ts/language-en": "^3.0.2",
@@ -39,8 +40,8 @@
     "eslint": "^10.0.1",
     "eslint-config-next": "^16.1.6",
     "eslint-plugin-cypress": "^6.1.0",
-    "eslint-plugin-react-refresh": "^0.5.0",
     "eslint-plugin-react-hooks": "7.1.0-canary-ab18f33d-20260220",
+    "eslint-plugin-react-refresh": "^0.5.0",
     "globals": "^17.3.0"
   }
 }

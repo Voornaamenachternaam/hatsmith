@@ -1,97 +1,33 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from "react";
 import Typography from "@mui/material/Typography";
-import { makeStyles } from "@mui/styles";
 import Container from "@mui/material/Container";
-import Tabs from "@mui/material/Tabs";
-import Tab from "@mui/material/Tab";
+import Link from "@mui/material/Link";
+import { Box, Chip, Avatar, Dialog, DialogTitle, DialogContent, DialogContentText, Tabs, Tab, TextField, Tooltip, IconButton, DialogActions, Button, Snackbar, Alert } from "@mui/material";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
 import FileCopyIcon from "@mui/icons-material/FileCopy";
-import Link from "@mui/material/Link";
-import { Chip, Avatar, Hidden } from "@mui/material";
-import Button from "@mui/material/Button";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
-import { IconButton, Tooltip, TextField } from "@mui/material";
-import { Alert } from "@mui/material";
-import Snackbar from "@mui/material/Snackbar";
 import { getTranslations as t } from "../../locales";
-let QRCode = require("qrcode.react");
-
-const useStyles = makeStyles((theme) => ({
-  root: {
-    marginTop: "auto",
-  },
-
-  footer: {
-    textAlign: "center",
-    color: theme.palette.custom.diamondBlack.main,
-    padding: theme.spacing(3, 2),
-  },
-
-  topScrollPaper: {
-    alignItems: "start",
-    marginTop: "10vh",
-  },
-  topPaperScrollBody: {
-    verticalAlign: "middle",
-  },
-
-  chip: {
-    marginTop: 5,
-    border: "none",
-    borderRadius: 8,
-    textTransform: "none",
-    boxShadow: "none",
-    color: theme.palette.custom.diamondBlack.main,
-    backgroundColor: theme.palette.custom.alto.light,
-    "&:hover": {
-      backgroundColor: theme.palette.custom.alto.main,
-    },
-    "&:focus": {
-      backgroundColor: theme.palette.custom.alto.main,
-      boxShadow: "none",
-    },
-    transition: "background-color 0.2s ease-out",
-    transition: "color .01s",
-  },
-
-  monIcon: {
-    color: theme.palette.custom.mountainMist.main,
-  },
-
-  qr: {
-    display: "flex",
-    flexDirection: "column",
-    margin: "auto",
-    width: "fit-content",
-    marginBottom: 20,
-  },
-}));
+import { getCustom } from "../config/Theme";
+import { QRCodeSVG } from "qrcode.react";
 
 const TabPanel = (props) => {
   const { children, value, index, ...other } = props;
 
   return (
     <div
-      component="div"
       role="tabpanel"
       hidden={value !== index}
       id={`donation-tabpanel-${index}`}
       aria-labelledby={`donation-tab-${index}`}
       {...other}
     >
-      {children}
+      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
     </div>
   );
 };
 
 export default function Footer() {
-  const classes = useStyles();
   const [tabValue, setTabValue] = useState(0);
   const [currAvatar, setCurrAvatar] = useState("xmr");
   const [donateDialog, setDonateDialog] = useState(false);
@@ -142,16 +78,24 @@ export default function Footer() {
   useEffect(() => {
     handleSnackOpen();
 
-    setInterval(() => {
+    const avatarInterval = setInterval(() => {
       setCurrAvatar(
         cryptoAddrs[Math.floor(Math.random() * cryptoAddrs.length)].alt
       );
     }, 10000);
+    return () => clearInterval(avatarInterval);
   }, []);
 
   return (
-    <div className={classes.root}>
-      <footer className={classes.footer}>
+    <Box sx={{ marginTop: "auto" }}>
+      <Box
+        component="footer"
+        sx={{
+          textAlign: "center",
+          color: (theme) => getCustom(theme).diamondBlack.main,
+          padding: (theme) => theme.spacing(3, 2),
+        }}
+      >
         <Container maxWidth="sm">
           <Typography variant="body1">
             Maintained by {" "}
@@ -184,18 +128,36 @@ export default function Footer() {
               {"sh-dv"}
             </Link>
           </Typography>
-          {/* <Chip
+
+          <Chip
             size="small"
-            className={classes.chip}
+            sx={{
+              marginTop: '5px',
+              border: "none",
+              borderRadius: '8px',
+              textTransform: "none",
+              boxShadow: "none",
+              color: (theme) => getCustom(theme).diamondBlack.main,
+              backgroundColor: (theme) => getCustom(theme).alto.light,
+              "&:hover": {
+                backgroundColor: (theme) => getCustom(theme).alto.main,
+              },
+              "&:focus": {
+                backgroundColor: (theme) => getCustom(theme).alto.main,
+                boxShadow: "none",
+              },
+              transition: "background-color 0.2s ease-out, color .01s",
+            }}
             avatar={
-              <Avatar src={`/assets/icons/${currAvatar}-logo_new.png`}></Avatar>
+              <Avatar src={`/assets/icons/${currAvatar}-logo.png`}></Avatar>
             }
             label="Donations Accepted"
             clickable
             onClick={() => handleClickOpen()}
             onDelete={() => handleClickOpen()}
-            deleteIcon={<MonetizationOnIcon className={classes.monIcon} />}
+            deleteIcon={<MonetizationOnIcon sx={{ color: (theme) => getCustom(theme).mountainMist.main }} />}
           />
+
           <Dialog
             scroll="body"
             maxWidth="sm"
@@ -207,28 +169,30 @@ export default function Footer() {
             PaperProps={{
               elevation: 0,
             }}
-            classes={{
-              scrollPaper: classes.topScrollPaper,
-              paperScrollBody: classes.topPaperScrollBody,
+            sx={{
+              '& .MuiDialog-container': {
+                alignItems: "start",
+                marginTop: "10vh",
+              },
             }}
           >
             <DialogTitle>{"Donations"}</DialogTitle>
 
             <DialogContent>
-              <Hidden xsDown>
-                <DialogContentText style={{ textAlign: "center" }}>
+              <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
+                <DialogContentText sx={{ textAlign: "center" }}>
                   Hat.sh is an open-source application. The project is
                   maintained in my free time. Donations of any size are
                   appreciated.
                 </DialogContentText>
-              </Hidden>
+              </Box>
 
               <Tabs
                 value={tabValue}
                 onChange={handleTabChange}
                 indicatorColor="primary"
                 textColor="primary"
-                style={{ marginBottom: 15 }}
+                sx={{ marginBottom: '15px' }}
                 centered
               >
                 {cryptoAddrs.map((res, index) => (
@@ -238,8 +202,14 @@ export default function Footer() {
 
               {cryptoAddrs.map((res, index) => (
                 <TabPanel value={tabValue} index={index} key={index}>
-                  <div className={classes.qr}>
-                    <QRCode
+                  <Box sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    margin: "auto",
+                    width: "fit-content",
+                    marginBottom: '20px',
+                  }}>
+                    <QRCodeSVG
                       style={{
                         borderRadius: 8,
                         margin: 10,
@@ -250,10 +220,9 @@ export default function Footer() {
                       bgColor={"#ffffff"}
                       fgColor={"#000000"}
                       level={"M"}
-                      renderAs={"canvas"}
                       includeMargin={true}
                       imageSettings={{
-                        src: `/assets/icons/${res.alt}-logo_new.png`,
+                        src: `/assets/icons/${res.alt}-logo.png`,
                         x: null,
                         y: null,
                         height: 40,
@@ -261,26 +230,28 @@ export default function Footer() {
                         excavate: false,
                       }}
                     />
-                  </div>
+                  </Box>
                   <TextField
-                    style={{ marginBottom: 15 }}
+                    sx={{ marginBottom: '15px' }}
                     defaultValue={res.addr}
                     label={res.type}
-                    InputProps={{
-                      readOnly: true,
-                      endAdornment: (
-                        <>
-                          <Tooltip title="Copy address" placement="left">
-                            <IconButton
-                              onClick={() => {
-                                navigator.clipboard.writeText(res.addr);
-                              }}
-                            >
-                              <FileCopyIcon />
-                            </IconButton>
-                          </Tooltip>
-                        </>
-                      ),
+                    slotProps={{
+                      input: {
+                        readOnly: true,
+                        endAdornment: (
+                          <>
+                            <Tooltip title="Copy address" placement="left">
+                              <IconButton
+                                onClick={() => {
+                                  navigator.clipboard.writeText(res.addr);
+                                }}
+                              >
+                                <FileCopyIcon />
+                              </IconButton>
+                            </Tooltip>
+                          </>
+                        ),
+                      }
                     }}
                     variant="outlined"
                     fullWidth
@@ -290,27 +261,28 @@ export default function Footer() {
             </DialogContent>
             <DialogActions>
               <Button
-                style={{ marginBottom: 1 }}
+                sx={{ marginBottom: '1px' }}
                 href="https://ko-fi.com/shdvapps"
                 target="_blank"
               >
                 <img
                   src="/assets/icons/ko-fi.png"
                   width="200"
-                  alt="open collective"
+                  alt="ko-fi"
                 ></img>
               </Button>
-              <div style={{ flex: "1 0 0" }} />
+              <Box sx={{ flex: "1 0 0" }} />
               <Button onClick={handleClose} color="primary">
                 {t("close")}
               </Button>
             </DialogActions>
-          </Dialog> */}
+          </Dialog>
         </Container>
-      </footer>
-      {/* <Hidden xsDown>
+      </Box>
+
+      <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
         <Snackbar
-          style={{ zIndex: 1 }}
+          sx={{ zIndex: 1 }}
           anchorOrigin={{
             vertical: "bottom",
             horizontal: "right",
@@ -352,7 +324,7 @@ export default function Footer() {
             {t("donation_message")}
           </Alert>
         </Snackbar>
-      </Hidden> */}
-    </div>
+      </Box>
+    </Box>
   );
 }

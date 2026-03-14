@@ -1,22 +1,21 @@
 import { currentVersion } from "../config/Constants";
-import { makeStyles } from "@mui/styles";
 import Chip from "@mui/material/Chip";
-
-const useStyles = makeStyles((theme) => ({
-  chip: {
-    backgroundColor: theme.palette.custom.gallery.main,
-    color: theme.palette.custom.mountainMist.main,
-    borderRadius: ".25rem",
-    padding: "none",
-    marginLeft: 5,
-    marginBottom: 0,
-  },
-}));
+import { getCustom } from "../config/Theme";
 
 const VersionBadge = () => {
-  const classes = useStyles();
   return (
-    <Chip className={classes.chip} label={"v" + currentVersion} size="small" />
+    <Chip
+      sx={{
+        backgroundColor: (theme) => getCustom(theme).gallery.main,
+        color: (theme) => getCustom(theme).mountainMist.main,
+        borderRadius: ".25rem",
+        padding: "none",
+        marginLeft: '5px',
+        marginBottom: 0,
+      }}
+      label={"v" + currentVersion}
+      size="small"
+    />
   );
 };
 

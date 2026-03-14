@@ -7,28 +7,9 @@ import { generatePassword, generatePassPhrase } from "../utils/generatePassword"
 import { computePublicKey } from "../utils/computePublicKey";
 import passwordStrengthCheck from "../utils/passwordStrengthCheck";
 import { CHUNK_SIZE } from "../config/Constants";
-import { makeStyles } from "@mui/styles";
-import { Alert, AlertTitle } from "@mui/material";
-import Grid from "@mui/material/Grid";
-import Stepper from "@mui/material/Stepper";
-import Step from "@mui/material/Step";
-import StepLabel from "@mui/material/StepLabel";
-import StepContent from "@mui/material/StepContent";
-import Button from "@mui/material/Button";
-import Paper from "@mui/material/Paper";
-import Typography from "@mui/material/Typography";
-import TextField from "@mui/material/TextField";
-import CircularProgress from "@mui/material/CircularProgress";
-import Backdrop from "@mui/material/Backdrop";
+import { Alert, AlertTitle, Box, Grid, Stepper, Step, StepLabel, StepContent, Button, Paper, Typography, TextField, CircularProgress, Backdrop, IconButton, Tooltip, Radio, RadioGroup, FormControlLabel, FormControl, Snackbar, Collapse, List, ListItem, ListItemSecondaryAction, ListItemText } from "@mui/material";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-import IconButton from "@mui/material/IconButton";
 import CachedIcon from "@mui/icons-material/Cached";
-import Tooltip from "@mui/material/Tooltip";
-import Radio from "@mui/material/Radio";
-import RadioGroup from "@mui/material/RadioGroup";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import FormControl from "@mui/material/FormControl";
-import Snackbar from "@mui/material/Snackbar";
 import AttachFileIcon from "@mui/icons-material/AttachFile";
 import FileCopyIcon from "@mui/icons-material/FileCopy";
 import RefreshIcon from "@mui/icons-material/Refresh";
@@ -37,172 +18,14 @@ import GetAppIcon from "@mui/icons-material/GetApp";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import LinkIcon from "@mui/icons-material/Link";
-import Collapse from "@mui/material/Collapse";
 import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
 import RotateLeftIcon from "@mui/icons-material/RotateLeft";
-import { getTranslations as t } from "../../locales";
-import {
-  List,
-  ListItem,
-  ListItemSecondaryAction,
-  ListItemText,
-} from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import InfoIcon from "@mui/icons-material/Info";
-import FileInfoDialog from "./FileInfoDialog";
-
-const useStyles = makeStyles((theme) => ({
-  root: {
-    width: "100%",
-  },
-  offline: {
-    fontSize: 12,
-    float: "right",
-    color: theme.palette.custom.diamondBlack.main,
-  },
-  stepper: {
-    color: theme.palette.custom.mineShaft.main,
-    backgroundColor: "transparent",
-  },
-
-  stepIcon: {
-    "&$activeStepIcon": {
-      color: theme.palette.custom.emperor.main,
-    },
-    "&$completedStepIcon": {
-      color: theme.palette.custom.emperor.main,
-    },
-  },
-  activeStepIcon: {},
-  completedStepIcon: {},
-
-  button: {
-    marginTop: theme.spacing(1),
-    marginRight: theme.spacing(1),
-    borderRadius: "8px",
-    border: "none",
-    color: theme.palette.custom.mineShaft.main,
-    backgroundColor: theme.palette.custom.mercury.light,
-    "&:hover": {
-      backgroundColor: theme.palette.custom.mercury.main,
-    },
-    transition: "background-color 0.2s ease-out",
-    transition: "color .01s",
-  },
-
-  browseButton: {
-    padding: 8,
-    paddingLeft: 15,
-    paddingRight: 15,
-    textTransform: "none",
-    borderRadius: "8px",
-    border: "none",
-    color: theme.palette.custom.mineShaft.main,
-    backgroundColor: theme.palette.custom.alto.light,
-    "&:hover": {
-      backgroundColor: theme.palette.custom.alto.main,
-    },
-    transition: "background-color 0.2s ease-out",
-    transition: "color .01s",
-  },
-
-  resetButton: {
-    marginLeft: 8,
-    padding: 8,
-    paddingLeft: 15,
-    paddingRight: 15,
-    textTransform: "none",
-    borderRadius: "8px",
-    border: "none",
-    color: theme.palette.custom.flower.text,
-    backgroundColor: theme.palette.custom.flower.main,
-    "&:hover": {
-      backgroundColor: theme.palette.custom.flower.light,
-    },
-    transition: "background-color 0.2s ease-out",
-    transition: "color .01s",
-  },
-
-  backButton: {
-    marginTop: theme.spacing(1),
-    marginRight: theme.spacing(1),
-    borderRadius: "8px",
-    backgroundColor: theme.palette.custom.mercury.main,
-    transition: "color .01s",
-  },
-  nextButton: {
-    marginTop: theme.spacing(1),
-    marginRight: theme.spacing(1),
-    borderRadius: "8px",
-    backgroundColor: theme.palette.primary.main,
-    color: theme.palette.custom.white.main,
-    "&:hover": {
-      backgroundColor: theme.palette.custom.mineShaft.main,
-    },
-    transition: "color .01s",
-  },
-  actionsContainer: {
-    marginBottom: theme.spacing(2),
-  },
-  resetContainer: {
-    padding: theme.spacing(3),
-    boxShadow: "rgba(149, 157, 165, 0.4) 0px 8px 24px",
-    borderRadius: "8px",
-  },
-
-  input: {
-    display: "none",
-  },
-
-  fileArea: {
-    padding: "20px",
-    border: "5px dashed",
-    borderColor: theme.palette.custom.gallery.main,
-    borderRadius: "14px",
-    marginBottom: "10px",
-    alignItems: "center",
-    justifyContent: "center",
-    flexDirection: "column",
-  },
-
-  filesInfo: {
-    float: "right",
-    marginTop: 15,
-    textTransform: "none",
-    color: theme.palette.custom.cottonBoll.text,
-    transition: "background-color 0.2s ease-out",
-    transition: "color .01s",
-  },
-
-  filesPaper: {
-    marginBottom: 15,
-    overflow: "auto",
-    maxHeight: "280px",
-    backgroundColor: "transparent",
-  },
-
-  filesList: {
-    display: "flex",
-    flex: "1",
-    flexWrap: "wrap",
-    alignContent: "center",
-    justifyContent: "center",
-  },
-
-  filesListItem: {
-    backgroundColor: "#f3f3f3",
-    borderRadius: "8px",
-    padding: 15,
-  },
-
-  filesListItemText: {
-    width: "100px",
-    maxWidth: "150px",
-    minHeight: "50px",
-    maxHeight: "50px",
-  },
-}));
+import FileInfoDialog from "./FileInfoDialog.jsx";
+import { getTranslations as t } from "../../locales";
+import { getCustom } from "../config/Theme";
 
 let file,
   files = [],
@@ -215,52 +38,29 @@ let file,
   publicKey;
 
 export default function EncryptionPanel() {
-  const classes = useStyles();
-
   const router = useRouter();
-
   const query = router.query;
 
   const [activeStep, setActiveStep] = useState(0);
-
   const [Files, setFiles] = useState([]);
-
   const [currFileState, setCurrFileState] = useState(0);
-
   const [sumFilesSizes, setSumFilesSizes] = useState(0);
-
   const [Password, setPassword] = useState();
-
   const [showPassword, setShowPassword] = useState(false);
-
   const [PublicKey, setPublicKey] = useState();
-
   const [PrivateKey, setPrivateKey] = useState();
-
   const [showPrivateKey, setShowPrivateKey] = useState(false);
-
   const [wrongPublicKey, setWrongPublicKey] = useState(false);
-
   const [wrongPrivateKey, setWrongPrivateKey] = useState(false);
-
   const [keysError, setKeysError] = useState(false);
-
   const [keysErrorMessage, setKeysErrorMessage] = useState();
-
   const [shortPasswordError, setShortPasswordError] = useState(false);
-
   const [encryptionMethod, setEncryptionMethod] = useState("secretKey");
-
   const [isDownloading, setIsDownloading] = useState(false);
-
   const [shareableLink, setShareableLink] = useState();
-
   const [snackBarOpen, setSnackBarOpen] = useState(false);
-
   const [snackBarMessage, setSnackBarMessage] = useState();
-
   const [pkAlert, setPkAlert] = useState(false);
-
   const [isPassphraseMode, setIsPassphraseMode] = useState(false);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -336,7 +136,7 @@ export default function EncryptionPanel() {
 
   const handleMethodStep = () => {
     if (encryptionMethodState === "secretKey") {
-      if (Password.length >= 12) {
+      if (Password && Password.length >= 12) {
         setActiveStep(2);
       } else {
         setShortPasswordError(true);
@@ -422,7 +222,6 @@ export default function EncryptionPanel() {
 
   const loadPublicKey = (file) => {
     if (file) {
-      // files must be of text and size below 1 mb
       if (file.size <= 1000000) {
         const reader = new FileReader();
         reader.readAsText(file);
@@ -443,7 +242,6 @@ export default function EncryptionPanel() {
 
   const loadPrivateKey = (file) => {
     if (file) {
-      // files must be of text and size below 1 mb
       if (file.size <= 1000000) {
         const reader = new FileReader();
         reader.readAsText(file);
@@ -462,7 +260,6 @@ export default function EncryptionPanel() {
   };
 
   const prepareFile = () => {
-    // send file name to sw
     let fileName = encodeURIComponent(files[currFile].name + ".enc");
     navigator.serviceWorker.ready.then((reg) => {
       reg.active.postMessage({ cmd: "prepareFileNameEnc", fileName });
@@ -493,8 +290,6 @@ export default function EncryptionPanel() {
           reg.active.postMessage({ cmd: "requestEncryption", password });
         });
       }
-    } else {
-      // console.log("out of files")
     }
   };
 
@@ -569,46 +364,37 @@ export default function EncryptionPanel() {
   }, [query.publicKey, query.tab]);
 
   useEffect(() => {
-    navigator.serviceWorker.addEventListener("message", (e) => {
+    const messageHandler = (e) => {
       switch (e.data.reply) {
         case "goodKeyPair":
           setActiveStep(2);
           break;
-
         case "wrongPrivateKey":
           setWrongPrivateKey(true);
           break;
-
         case "wrongPublicKey":
           setWrongPublicKey(true);
           break;
-
         case "wrongKeyPair":
           setKeysError(true);
           setKeysErrorMessage(t("invalid_key_pair"));
           break;
-
         case "wrongKeyInput":
           setKeysError(true);
           setKeysErrorMessage(t("invalid_keys_input"));
           break;
-
         case "keysGenerated":
           startEncryption("secretKey");
           break;
-
         case "keyPairReady":
           startEncryption("publicKey");
           break;
-
         case "filePreparedEnc":
           kickOffEncryption();
           break;
-
         case "continueEncryption":
           continueEncryption(e);
           break;
-
         case "encryptionFinished":
           if (numberOfFiles > 1) {
             updateCurrFile();
@@ -628,8 +414,11 @@ export default function EncryptionPanel() {
           }
           break;
       }
-    });
+    };
+    navigator.serviceWorker.addEventListener("message", messageHandler);
+    return () => navigator.serviceWorker.removeEventListener("message", messageHandler);
   }, []);
+
   const [selectedFile, setSelectedFile] = useState(null);
   const [showInfo, setShowInfo] = useState(false);
 
@@ -644,7 +433,7 @@ export default function EncryptionPanel() {
   };
 
   return (
-    <div className={classes.root} {...getRootProps()}>
+    <Box sx={{ width: "100%" }} {...getRootProps()}>
       <Snackbar
         anchorOrigin={{
           vertical: "bottom",
@@ -658,11 +447,11 @@ export default function EncryptionPanel() {
           {snackBarMessage}
         </Alert>
       </Snackbar>
-      <Backdrop open={isDragActive} style={{ zIndex: 10 }}>
+      <Backdrop open={isDragActive} sx={{ zIndex: 10 }}>
         <Typography
           variant="h2"
           gutterBottom
-          style={{ color: "#fff", textAlign: "center" }}
+          sx={{ color: "#fff", textAlign: "center" }}
         >
           <img
             src="/assets/images/logo_new.png"
@@ -675,7 +464,7 @@ export default function EncryptionPanel() {
         </Typography>
       </Backdrop>
 
-      <Collapse in={pkAlert} style={{ marginTop: 5 }}>
+      <Collapse in={pkAlert} sx={{ marginTop: '5px' }}>
         <Alert
           severity="success"
           action={
@@ -698,43 +487,74 @@ export default function EncryptionPanel() {
       <Stepper
         activeStep={activeStep}
         orientation="vertical"
-        className={classes.stepper}
+        sx={{
+          color: (theme) => getCustom(theme).mineShaft.main,
+          backgroundColor: "transparent",
+          '& .MuiStepIcon-root': {
+            '&.Mui-active': {
+              color: (theme) => getCustom(theme).emperor.main,
+            },
+            '&.Mui-completed': {
+              color: (theme) => getCustom(theme).emperor.main,
+            },
+          }
+        }}
       >
         <Step key={1}>
-          <StepLabel
-            StepIconProps={{
-              classes: {
-                root: classes.stepIcon,
-                active: classes.activeStepIcon,
-                completed: classes.completedStepIcon,
-              },
-            }}
-          >
-            {t("choose_files_enc")}
-          </StepLabel>
+          <StepLabel>{t("choose_files_enc")}</StepLabel>
           <StepContent>
-            <div className="wrapper p-3" id="encFileWrapper">
-              <div
-                className={classes.fileArea}
+            <Box className="wrapper p-3" id="encFileWrapper">
+              <Box
                 id="encFileArea"
-                style={{ display: Files.length > 0 ? "" : "flex" }}
+                sx={{
+                  padding: "20px",
+                  border: "5px dashed",
+                  borderColor: (theme) => getCustom(theme).gallery.main,
+                  borderRadius: "14px",
+                  marginBottom: "10px",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexDirection: "column",
+                  display: Files.length > 0 ? "block" : "flex"
+                }}
               >
-                <Paper elevation={0} className={classes.filesPaper}>
-                  <List dense={true} className={classes.filesList}>
+                <Paper elevation={0} sx={{
+                  marginBottom: '15px',
+                  overflow: "auto",
+                  maxHeight: "280px",
+                  backgroundColor: "transparent",
+                }}>
+                  <List dense={true} sx={{
+                    display: "flex",
+                    flex: "1",
+                    flexWrap: "wrap",
+                    alignContent: "center",
+                    justifyContent: "center",
+                  }}>
                     {Files.length > 0
                       ? Files.map((file, index) => (
                           <ListItem
                             key={index}
-                            className={classes.filesListItem}
+                            sx={{
+                              backgroundColor: "#f3f3f3",
+                              borderRadius: "8px",
+                              padding: '15px',
+                              marginBottom: '5px'
+                            }}
                           >
                             <ListItemText
-                              className={classes.filesListItemText}
+                              sx={{
+                                width: "100px",
+                                maxWidth: "150px",
+                                minHeight: "50px",
+                                maxHeight: "50px",
+                              }}
                               primary={file.name}
                               secondary={formatBytes(file.size)}
                             />
                             <ListItemSecondaryAction>
                               <IconButton
-                                style={{ marginTop: 40 }}
+                                sx={{ marginTop: '40px' }}
                                 onClick={() => handleOpenInfo(file)}
                                 edge="end"
                                 aria-label="info"
@@ -742,7 +562,7 @@ export default function EncryptionPanel() {
                                 <InfoIcon />
                               </IconButton>
                               <IconButton
-                                style={{ marginTop: 40 }}
+                                sx={{ marginTop: '40px' }}
                                 onClick={() => updateFilesInput(index)}
                                 edge="end"
                                 aria-label="delete"
@@ -757,16 +577,28 @@ export default function EncryptionPanel() {
                 </Paper>
                 
                 <input
-                  {...getInputProps()}
-                  className={classes.input}
                   id="enc-file"
                   type="file"
+                  style={{ display: 'none' }}
                   onChange={(e) => handleFilesInput(e.target.files)}
                   multiple
                 />
                 <label htmlFor="enc-file">
                   <Button
-                    className={classes.browseButton}
+                    sx={{
+                      padding: '8px',
+                      paddingLeft: '15px',
+                      paddingRight: '15px',
+                      textTransform: "none",
+                      borderRadius: "8px",
+                      border: "none",
+                      color: (theme) => getCustom(theme).mineShaft.main,
+                      backgroundColor: (theme) => getCustom(theme).alto.light,
+                      "&:hover": {
+                        backgroundColor: (theme) => getCustom(theme).alto.main,
+                      },
+                      transition: "background-color 0.2s ease-out, color .01s",
+                    }}
                     component="span"
                     startIcon={
                       Files.length > 0 ? <AddIcon /> : <DescriptionIcon />
@@ -780,53 +612,80 @@ export default function EncryptionPanel() {
                   <>
                     <Button
                       onClick={() => resetFilesInput()}
-                      className={classes.resetButton}
+                      sx={{
+                        marginLeft: '8px',
+                        padding: '8px',
+                        paddingLeft: '15px',
+                        paddingRight: '15px',
+                        textTransform: "none",
+                        borderRadius: "8px",
+                        border: "none",
+                        color: (theme) => getCustom(theme).flower.text,
+                        backgroundColor: (theme) => getCustom(theme).flower.main,
+                        "&:hover": {
+                          backgroundColor: (theme) => getCustom(theme).flower.light,
+                        },
+                        transition: "background-color 0.2s ease-out, color .01s",
+                      }}
                       component="span"
                       startIcon={<RotateLeftIcon />}
                     >
                       {t("reset")}
                     </Button>
 
-                    <small className={classes.filesInfo}>
+                    <Box component="small" sx={{
+                      float: "right",
+                      marginTop: '15px',
+                      textTransform: "none",
+                      color: (theme) => getCustom(theme).cottonBoll.text,
+                      transition: "background-color 0.2s ease-out, color .01s",
+                    }}>
                       {Files.length} {Files.length > 1 ? t("files") : t("file")}
                       {Files.length > 1 && <>, {formatBytes(sumFilesSizes)}</>}
-                    </small>
+                    </Box>
                   </>
                 )}
-              </div>
+              </Box>
               <FileInfoDialog file={selectedFile} display={showInfo} onClose={handleCloseInfo} />
-            </div>
+            </Box>
 
-            <div className={classes.actionsContainer}>
+            <Box sx={{ marginBottom: (theme) => theme.spacing(2) }}>
               <div>
                 <Button
                   fullWidth
                   disabled={Files.length === 0}
                   variant="contained"
                   onClick={handleNext}
-                  className={`${classes.nextButton} nextBtnHs submitFile`}
+                  sx={{
+                    marginTop: (theme) => theme.spacing(1),
+                    marginRight: (theme) => theme.spacing(1),
+                    borderRadius: "8px",
+                    backgroundColor: (theme) => theme.palette.primary.main,
+                    color: (theme) => getCustom(theme).white.main,
+                    "&:hover": {
+                      backgroundColor: (theme) => getCustom(theme).mineShaft.main,
+                    },
+                    transition: "color .01s",
+                  }}
+                  className="nextBtnHs submitFile"
                 >
                   {t("next")}
                 </Button>
               </div>
-            </div>
+            </Box>
 
-            <Typography className={classes.offline}>
+            <Typography sx={{
+              fontSize: 12,
+              float: "right",
+              color: (theme) => getCustom(theme).diamondBlack.main,
+            }}>
               {t("offline_note")}
             </Typography>
           </StepContent>
         </Step>
 
         <Step key={2}>
-          <StepLabel
-            StepIconProps={{
-              classes: {
-                root: classes.stepIcon,
-                active: classes.activeStepIcon,
-                completed: classes.completedStepIcon,
-              },
-            }}
-          >
+          <StepLabel>
             {encryptionMethod !== "secretKey"
               ?  t("enter_keys_enc") : isPassphraseMode ? t("enter_passphrase") :  t("enter_password_enc") }
           </StepLabel>
@@ -834,7 +693,7 @@ export default function EncryptionPanel() {
           <StepContent>
             <FormControl
               component="fieldset"
-              style={{ float: "right", marginBottom: "15px" }}
+              sx={{ float: "right", marginBottom: "15px" }}
             >
               <RadioGroup
                 row
@@ -938,13 +797,13 @@ export default function EncryptionPanel() {
                   value={PublicKey ? PublicKey : ""}
                   onChange={(e) => handlePublicKeyInput(e.target.value)}
                   fullWidth
-                  style={{ marginBottom: "15px" }}
+                  sx={{ marginBottom: "15px" }}
                   InputProps={{
                     endAdornment: (
                       <>
                         <input
                           accept=".public"
-                          className={classes.input}
+                          style={{ display: 'none' }}
                           id="public-key-file"
                           type="file"
                           onChange={(e) => loadPublicKey(e.target.files[0])}
@@ -981,7 +840,7 @@ export default function EncryptionPanel() {
                   value={PrivateKey ? PrivateKey : ""}
                   onChange={(e) => handlePrivateKeyInput(e.target.value)}
                   fullWidth
-                  style={{ marginBottom: "15px" }}
+                  sx={{ marginBottom: "15px" }}
                   InputProps={{
                     endAdornment: (
                       <>
@@ -1004,7 +863,7 @@ export default function EncryptionPanel() {
 
                         <input
                           accept=".private"
-                          className={classes.input}
+                          style={{ display: 'none' }}
                           id="private-key-file"
                           type="file"
                           onChange={(e) => loadPrivateKey(e.target.files[0])}
@@ -1031,14 +890,20 @@ export default function EncryptionPanel() {
               </>
             )}
 
-            <div className={classes.actionsContainer} style={{ marginTop: 15 }}>
+            <Box sx={{ marginBottom: (theme) => theme.spacing(2), marginTop: '15px' }}>
               <div>
                 <Grid container spacing={1}>
                   <Grid item>
                     <Button
                       disabled={activeStep === 0}
                       onClick={handleBack}
-                      className={classes.backButton}
+                      sx={{
+                        marginTop: (theme) => theme.spacing(1),
+                        marginRight: (theme) => theme.spacing(1),
+                        borderRadius: "8px",
+                        backgroundColor: (theme) => getCustom(theme).mercury.main,
+                        transition: "color .01s",
+                      }}
                       fullWidth
                     >
                       {t("back")}
@@ -1053,7 +918,18 @@ export default function EncryptionPanel() {
                       }
                       variant="contained"
                       onClick={handleMethodStep}
-                      className={`${classes.nextButton} nextBtnHs submitKeys`}
+                      sx={{
+                        marginTop: (theme) => theme.spacing(1),
+                        marginRight: (theme) => theme.spacing(1),
+                        borderRadius: "8px",
+                        backgroundColor: (theme) => theme.palette.primary.main,
+                        color: (theme) => getCustom(theme).white.main,
+                        "&:hover": {
+                          backgroundColor: (theme) => getCustom(theme).mineShaft.main,
+                        },
+                        transition: "color .01s",
+                      }}
+                      className="nextBtnHs submitKeys"
                       fullWidth
                     >
                       {t("next")}
@@ -1070,22 +946,12 @@ export default function EncryptionPanel() {
                   <Alert severity="error">{t("short_password")}</Alert>
                 )}
               </div>
-            </div>
+            </Box>
           </StepContent>
         </Step>
 
         <Step key={3}>
-          <StepLabel
-            StepIconProps={{
-              classes: {
-                root: classes.stepIcon,
-                active: classes.activeStepIcon,
-                completed: classes.completedStepIcon,
-              },
-            }}
-          >
-            {t("download_encrypted_files")}
-          </StepLabel>
+          <StepLabel>{t("download_encrypted_files")}</StepLabel>
           <StepContent>
             {Files.length > 0 && (
               <Alert severity="success" icon={<LockOutlinedIcon />}>
@@ -1098,13 +964,19 @@ export default function EncryptionPanel() {
               </Alert>
             )}
 
-            <div className={classes.actionsContainer}>
+            <Box sx={{ marginBottom: (theme) => theme.spacing(2) }}>
               <Grid container spacing={1}>
                 <Grid item>
                   <Button
                     disabled={activeStep === 0 || isDownloading}
                     onClick={handleBack}
-                    className={classes.backButton}
+                    sx={{
+                      marginTop: (theme) => theme.spacing(1),
+                      marginRight: (theme) => theme.spacing(1),
+                      borderRadius: "8px",
+                      backgroundColor: (theme) => getCustom(theme).mercury.main,
+                      transition: "color .01s",
+                    }}
                   >
                     {t("back")}
                   </Button>
@@ -1117,33 +989,41 @@ export default function EncryptionPanel() {
                       Files.length === 0
                     }
                     variant="contained"
-                    className={`${classes.nextButton} nextBtnHs`}
+                    sx={{
+                      marginTop: (theme) => theme.spacing(1),
+                      marginRight: (theme) => theme.spacing(1),
+                      borderRadius: "8px",
+                      backgroundColor: (theme) => theme.palette.primary.main,
+                      color: (theme) => getCustom(theme).white.main,
+                      "&:hover": {
+                        backgroundColor: (theme) => getCustom(theme).mineShaft.main,
+                      },
+                      transition: "color .01s",
+                    }}
+                    className="nextBtnHs"
                     startIcon={
                       isDownloading ? (
                         <CircularProgress
                           size={24}
-                          className={classes.buttonProgress}
                         />
                       ) : (
                         <GetAppIcon />
                       )
                     }
                     fullWidth
+                    onClick={(e) => handleEncryptedFilesDownload(e)}
                   >
-                    <a
-                      onClick={(e) => handleEncryptedFilesDownload(e)}
-                      className="downloadFile"
-                      style={{
+                    <Box component="span" className="downloadFile" sx={{
                         width: "100%",
                         textDecoration: "none",
-                      }}
-                    >
+                        color: 'inherit'
+                      }}>
                       {isDownloading
                         ? `${currFileState + 1}/${numberOfFiles} ${t(
                             "downloading_file"
                           )}`
                         : t("encrypted_files")}
-                    </a>
+                    </Box>
                   </Button>
                 </Grid>
               </Grid>
@@ -1154,16 +1034,20 @@ export default function EncryptionPanel() {
                   {t("page_close_alert")}
                 </Alert>
               )}
-            </div>
+            </Box>
           </StepContent>
         </Step>
       </Stepper>
       {activeStep === 3 && (
-        <Paper elevation={0} className={classes.resetContainer}>
+        <Paper elevation={0} sx={{
+          padding: (theme) => theme.spacing(3),
+          boxShadow: "rgba(149, 157, 165, 0.4) 0px 8px 24px",
+          borderRadius: "8px",
+        }}>
           <Alert
             variant="outlined"
             severity="success"
-            style={{ border: "none" }}
+            sx={{ border: "none" }}
           >
             <AlertTitle>{t("success")}</AlertTitle>
             {t("success_downloaded_files_enc")}
@@ -1188,11 +1072,23 @@ export default function EncryptionPanel() {
                     setSnackBarMessage(t("password_copied"));
                     showSnackBar();
                   }}
-                  className={`${classes.button} copyPassword`}
+                  sx={{
+                    marginTop: (theme) => theme.spacing(1),
+                    marginRight: (theme) => theme.spacing(1),
+                    borderRadius: "8px",
+                    border: "none",
+                    color: (theme) => getCustom(theme).mineShaft.main,
+                    backgroundColor: (theme) => getCustom(theme).mercury.light,
+                    "&:hover": {
+                      backgroundColor: (theme) => getCustom(theme).mercury.main,
+                    },
+                    transition: "background-color 0.2s ease-out, color .01s",
+                    textTransform: "none"
+                  }}
+                  className="copyPassword"
                   variant="outlined"
                   startIcon={<FileCopyIcon />}
                   fullWidth
-                  style={{ textTransform: "none" }}
                 >
                   {t("copy_password")}
                 </Button>
@@ -1207,11 +1103,22 @@ export default function EncryptionPanel() {
                 >
                   <Button
                     onClick={() => createShareableLink()}
-                    className={classes.button}
+                    sx={{
+                      marginTop: (theme) => theme.spacing(1),
+                      marginRight: (theme) => theme.spacing(1),
+                      borderRadius: "8px",
+                      border: "none",
+                      color: (theme) => getCustom(theme).mineShaft.main,
+                      backgroundColor: (theme) => getCustom(theme).mercury.light,
+                      "&:hover": {
+                        backgroundColor: (theme) => getCustom(theme).mercury.main,
+                      },
+                      transition: "background-color 0.2s ease-out, color .01s",
+                      textTransform: "none"
+                    }}
                     variant="outlined"
                     startIcon={<LinkIcon />}
                     fullWidth
-                    style={{ textTransform: "none" }}
                   >
                     {t("create_shareable_link")}
                   </Button>
@@ -1222,11 +1129,22 @@ export default function EncryptionPanel() {
             <Grid item xs={12} sm={6}>
               <Button
                 onClick={handleReset}
-                className={classes.button}
+                sx={{
+                  marginTop: (theme) => theme.spacing(1),
+                  marginRight: (theme) => theme.spacing(1),
+                  borderRadius: "8px",
+                  border: "none",
+                  color: (theme) => getCustom(theme).mineShaft.main,
+                  backgroundColor: (theme) => getCustom(theme).mercury.light,
+                  "&:hover": {
+                    backgroundColor: (theme) => getCustom(theme).mercury.main,
+                  },
+                  transition: "background-color 0.2s ease-out, color .01s",
+                  textTransform: "none"
+                }}
                 variant="outlined"
                 startIcon={<RefreshIcon />}
                 fullWidth
-                style={{ textTransform: "none" }}
               >
                 {t("encrypt_more_files")}
               </Button>
@@ -1234,17 +1152,10 @@ export default function EncryptionPanel() {
 
             {encryptionMethod === "publicKey" && shareableLink && (
               <TextField
-                style={{ marginTop: 15 }}
-                defaultValue={
-                  shareableLink != undefined ? shareableLink : shareableLink
-                }
+                sx={{ marginTop: '15px' }}
+                defaultValue={shareableLink}
                 InputProps={{
                   readOnly: true,
-                  classes: {
-                    root: classes.textFieldRoot,
-                    focused: classes.textFieldFocused,
-                    notchedOutline: classes.textFieldNotchedOutline,
-                  },
                   endAdornment: (
                     <>
                       <Tooltip title={t("copy_link")} placement="left">
@@ -1271,6 +1182,6 @@ export default function EncryptionPanel() {
           </Grid>
         </Paper>
       )}
-    </div>
+    </Box>
   );
 }

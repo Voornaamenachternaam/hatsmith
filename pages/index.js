@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import MainContainer from "../src/views/MainContainer";
 import LimitedContainer from "../src/views/LimitedContainer";
-import { ThemeProvider } from "@mui/styles";
-import { Theme } from "../src/config/Theme";
 import LoadingCom from "../src/components/Loading";
 
 const Home = () => {
@@ -12,9 +10,11 @@ const Home = () => {
 
   useEffect(() => {
     const safariBrowser =
+      typeof navigator !== 'undefined' &&
       /Safari/.test(navigator.userAgent) &&
       /Apple Computer/.test(navigator.vendor);
     const mobileBrowser =
+      typeof navigator !== 'undefined' &&
       /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
         navigator.userAgent
       );
@@ -26,7 +26,7 @@ const Home = () => {
     }
 
     //register service worker
-    if ("serviceWorker" in navigator) {
+    if (typeof navigator !== 'undefined' && "serviceWorker" in navigator) {
       navigator.serviceWorker
         .register("service-worker.js")
         .then((reg) => {
@@ -40,18 +40,15 @@ const Home = () => {
           setLoading(false);
         });
     } else {
-      // console.log("did not register sw");
       setSwReg(false);
       setLoading(false);
     }
   }, []);
 
   return (<>
-    {/* // <ThemeProvider theme={Theme}> */}
       <LoadingCom open={loading} />
       {!loading &&
         (swReg && browserSupport ? <MainContainer /> : <LimitedContainer />)}
-    {/* // </ThemeProvider> */}
   </>);
 };
 

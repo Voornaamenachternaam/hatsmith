@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import PropTypes from "prop-types";
-import { makeStyles, withStyles } from "@mui/styles";
+import { styled } from "@mui/system";
 import AppBar from "@mui/material/AppBar";
 import Container from "@mui/material/Container";
 import Tabs from "@mui/material/Tabs";
@@ -9,50 +9,31 @@ import Tab from "@mui/material/Tab";
 import LimitedEncryptionPanel from "./LimitedEncryptionPanel";
 import LimitedDecryptionPanel from "./LimitedDecryptionPanel";
 import LimitedAlert from "./LimitedAlert";
+import { getCustom } from "../../config/Theme";
 
 import { getTranslations as t } from "../../../locales";
 
-const StyledTabs = withStyles({
-  indicator: {
+const StyledTabs = styled(Tabs)({
+  '& .MuiTabs-indicator': {
     display: "none",
   },
-})((props) => <Tabs {...props} TabIndicatorProps={{ children: <span /> }} />);
+});
 
-const StyledTab = withStyles((theme) => ({
-  root: {
+const StyledTab = styled(Tab)(({ theme }) => {
+  const custom = getCustom(theme);
+  return {
     textTransform: "none",
     padding: "8px",
     transition: "background-color 0.2s ease-out",
-
-    "&$selected": {
-      backgroundColor: theme.palette.custom.white.main,
+    color: custom.emperor.main,
+    '&.Mui-selected': {
+      backgroundColor: custom.white.main,
       boxShadow: "rgba(149, 157, 165, 0.2) 0px 8px 24px",
       borderRadius: "8px",
+      color: custom.emperor.main,
     },
-  },
-  selected: {},
-}))((props) => <Tab disableRipple {...props} />);
-
-const useStyles = makeStyles((theme) => ({
-  root: {
-    maxWidth: "768px",
-  },
-
-  bar: {
-    marginTop: 15,
-    backgroundColor: theme.palette.custom.gallery.main,
-    borderRadius: "8px",
-    padding: 8,
-  },
-
-  TabPanel: {
-    marginTop: 15,
-  },
-
-  tab: {
-    color: theme.palette.custom.emperor.main,
-  },
-}));
+  };
+});
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -63,6 +44,7 @@ function TabPanel(props) {
       hidden={value !== index}
       id={`simple-tabpanel-${index}`}
       aria-labelledby={`simple-tab-${index}`}
+      style={{ marginTop: '15px' }}
       {...other}
     >
       {children}
@@ -77,7 +59,6 @@ TabPanel.propTypes = {
 };
 
 export default function LimitedPanels() {
-  const classes = useStyles();
   const router = useRouter();
   const query = router.query;
   const [value, setValue] = useState(0);
@@ -104,31 +85,38 @@ export default function LimitedPanels() {
 
   return (
     <>
-      <Container className={classes.root}>
+      <Container sx={{ maxWidth: "768px !important" }}>
         <LimitedAlert />
-        <AppBar position="static" className={classes.bar} elevation={0}>
+        <AppBar
+          position="static"
+          elevation={0}
+          sx={{
+            marginTop: '15px',
+            backgroundColor: (theme) => getCustom(theme).gallery.main,
+            borderRadius: "8px",
+            padding: '8px',
+          }}
+        >
           <StyledTabs
             value={value}
             onChange={handleChange}
             variant="fullWidth"
             centered
           >
-            <StyledTab label={encryption.label} className={classes.tab} />
-            <StyledTab label={decryption.label} className={classes.tab} />
+            <StyledTab label={encryption.label} />
+            <StyledTab label={decryption.label} />
           </StyledTabs>
         </AppBar>
 
         <TabPanel
           value={value}
           index={encryption.tab}
-          className={classes.TabPanel}
         >
           <LimitedEncryptionPanel />
         </TabPanel>
         <TabPanel
           value={value}
           index={decryption.tab}
-          className={classes.TabPanel}
         >
           <LimitedDecryptionPanel />
         </TabPanel>
