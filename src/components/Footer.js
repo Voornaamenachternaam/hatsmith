@@ -37,17 +37,17 @@ export default function Footer() {
     {
       type: "monero",
       alt: "xmr",
-      addr: "84zQq4Xt7sq8cmGryuvWsXFMDvBvHjWjnMQXZWQQRXjB1TgoZWS9zBdNcYL7CRbQBqcDdxr4RtcvCgApmQcU6SemVXd7RuG",
+      addr: "3",
     },
     {
       type: "bitcoin",
       alt: "btc",
-      addr: "bc1qlfnq8nu2k84h3jth7a27khaq0p2l2gvtyl2dv6",
+      addr: "2",
     },
     {
       type: "ethereum",
       alt: "eth",
-      addr: "0xF6F204B044CC73Fa90d7A7e4C5EC2947b83b917e",
+      addr: "1",
     },
   ];
 
@@ -100,18 +100,18 @@ export default function Footer() {
           <Typography variant="body1">
             Maintained by {" "}
             <Link
-              href="https://github.com/mrtechtroid"
+              href="https://github.com/Voornaamenachternaam"
               target="_blank"
               rel="noopener"
               color="inherit"
             >
-              {"mrtechtroid"}
+              {"Voornaamenachternaam"}
             </Link>
           </Typography>
           <Typography variant="body1">
             Hatsmith is a fork of{" "}
             <Link
-              href="https://github.com/sh-dv/hat.sh"
+              href="https://github.com/Voornaamenachternaam/hatsmith"
               target="_blank"
               rel="noopener"
               color="inherit"
@@ -120,12 +120,12 @@ export default function Footer() {
             </Link>
             {" "}by {" "}
             <Link
-              href="https://github.com/sh-dv"
+              href="https://github.com/Voornaamenachternaam"
               target="_blank"
               rel="noopener"
               color="inherit"
             >
-              {"sh-dv"}
+              {"Voornaamenachternaam"}
             </Link>
           </Typography>
 
@@ -181,9 +181,7 @@ export default function Footer() {
             <DialogContent>
               <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
                 <DialogContentText sx={{ textAlign: "center" }}>
-                  Hat.sh is an open-source application. The project is
-                  maintained in my free time. Donations of any size are
-                  appreciated.
+                 Na
                 </DialogContentText>
               </Box>
 
