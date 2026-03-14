@@ -1,9 +1,10 @@
 import Head from "next/head";
 import { getTranslations as t } from "../locales";
 import "../public/assets/styles/style.css";
-import { ThemeProvider, CssBaseline } from "@mui/styles";
+import { ThemeProvider as MuiThemeProvider } from "@mui/material/styles";
+import { ThemeProvider as StylesThemeProvider } from "@mui/styles";
+import { CssBaseline } from "@mui/material";
 import { Theme, checkTheme } from "../src/config/Theme";
-// import { makeStyles, useTheme } from "@mui/styles";
 //check wether the user prefers/chose dark theme
 checkTheme();
 
@@ -37,9 +38,12 @@ function MyApp({ Component, pageProps }) {
           media="(prefers-color-scheme: dark)"
         />
       </Head>
-      <ThemeProvider theme={Theme}>
-        <Component {...pageProps} />
-      </ThemeProvider>
+      <MuiThemeProvider theme={Theme}>
+        <StylesThemeProvider theme={Theme}>
+          <CssBaseline />
+          <Component {...pageProps} />
+        </StylesThemeProvider>
+      </MuiThemeProvider>
     </>
   );
 }

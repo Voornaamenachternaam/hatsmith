@@ -7,15 +7,20 @@ import CheckMultipleTabs from "../config/CheckMultipleTabs";
 
 
 
+const useStyles = makeStyles((theme) => ({
+  root: {
+    backgroundColor: theme.palette.custom?.alabaster?.main || "#fff",
+    minHeight: "100vh",
+    display: "flex",
+    flexDirection: "column",
+  },
+}));
+
 const MainContainer = () => {
+  const classes = useStyles();
 
   return (
-    <div sx={{
-        backgroundColor: (theme) => theme.palette.custom?.alabaster?.main || "#fff",
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-      }}>
+    <div className={classes.root}>
       <CheckMultipleTabs />
       <NavAppBar />
       <Hero />

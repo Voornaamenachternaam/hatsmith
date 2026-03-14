@@ -2,9 +2,9 @@ import { createTheme } from "@mui/material/styles";
 import { FormControlLabel, Switch } from "@mui/material";
 import { useState } from "react";
 import { getTranslations as t } from "../../locales";
-import { border, styled } from '@mui/system';
+import { styled } from '@mui/material/styles';
 import { useEffect } from "react";
-export const Theme = createTheme({
+const themeOptions = {
   palette: {
     primary: {
       main: "#464653",
@@ -64,7 +64,9 @@ export const Theme = createTheme({
     }
     }
   },
-});
+};
+
+export const Theme = createTheme(themeOptions);
 
 
 

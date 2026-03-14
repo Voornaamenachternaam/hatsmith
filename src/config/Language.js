@@ -4,7 +4,7 @@ import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
-import { Button, Hidden } from "@mui/material";
+import { Button } from "@mui/material";
 import { Alert } from "@mui/material";
 import { checkLocale } from "../../locales";
 import { getTranslations as t } from "../../locales";

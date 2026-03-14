@@ -9,7 +9,7 @@ import FavoriteIcon from "@mui/icons-material/Favorite";
 import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
 import FileCopyIcon from "@mui/icons-material/FileCopy";
 import Link from "@mui/material/Link";
-import { Chip, Avatar, Hidden } from "@mui/material";
+import { Chip, Avatar, Box } from "@mui/material";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
@@ -215,13 +215,13 @@ export default function Footer() {
             <DialogTitle>{"Donations"}</DialogTitle>
 
             <DialogContent>
-              <Hidden xsDown>
+              <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
                 <DialogContentText style={{ textAlign: "center" }}>
                   Hat.sh is an open-source application. The project is
                   maintained in my free time. Donations of any size are
                   appreciated.
                 </DialogContentText>
-              </Hidden>
+              </Box>
 
               <Tabs
                 value={tabValue}
@@ -308,7 +308,7 @@ export default function Footer() {
           </Dialog> */}
         </Container>
       </footer>
-      {/* <Hidden xsDown>
+      {/* <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
         <Snackbar
           style={{ zIndex: 1 }}
           anchorOrigin={{
@@ -352,7 +352,7 @@ export default function Footer() {
             {t("donation_message")}
           </Alert>
         </Snackbar>
-      </Hidden> */}
+      </Box> */}
     </div>
   );
 }

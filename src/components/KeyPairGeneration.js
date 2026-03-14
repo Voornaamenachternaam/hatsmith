@@ -13,7 +13,7 @@ import GetAppIcon from "@mui/icons-material/GetApp";
 import { generateAsymmetricKeys } from "../utils/generateAsymmetricKeys";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import Hidden from '@mui/material/Hidden';
+import Box from '@mui/material/Box';
 import { getTranslations as t } from "../../locales";
 import QuickResponseCode from "./QuickResponseCode";
 
@@ -125,13 +125,13 @@ const KeysGeneration = (props) => {
           {t("key_pair_question")}
         </Typography>
 
-        <Hidden xsDown>
+        <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
           <a href="/about/#why-need-private-key" target="_blank">
             <Typography variant="caption" className={classes.keyCaption}>
               {t('why_need_private_key')}
             </Typography>
           </a>
-        </Hidden>
+        </Box>
       </div>
     }
       <div className={classes.root}>

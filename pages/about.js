@@ -7,7 +7,6 @@ import AppBar from "@mui/material/AppBar";
 import CssBaseline from "@mui/material/CssBaseline";
 import Divider from "@mui/material/Divider";
 import Drawer from "@mui/material/Drawer";
-import Hidden from "@mui/material/Hidden";
 import IconButton from "@mui/material/IconButton";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
@@ -33,7 +32,7 @@ import LiveHelpIcon from "@mui/icons-material/LiveHelp";
 import HistoryIcon from "@mui/icons-material/History";
 import prism from "prismjs";
 import Settings from "../src/components/Settings";
-import { ThemeProvider } from "@mui/styles";
+import { ThemeProvider as StylesThemeProvider } from "@mui/styles";
 import { Theme, checkTheme } from "../src/config/Theme";
 import locales from "../locales/locales";
 import { getTranslations as t } from "../locales";
@@ -316,7 +315,8 @@ export default function About(props) {
     </div>
   );
   return (
-    // <ThemeProvider theme={Theme}>
+    <ThemeProvider theme={Theme}>
+      <StylesThemeProvider theme={Theme}>
       <div className={classes.root}>
         <CssBaseline />
 
@@ -366,7 +366,8 @@ export default function About(props) {
 
         <Footer />
       </div>
-    // </ThemeProvider>
+      </StylesThemeProvider>
+    </ThemeProvider>
   );
 }
 
