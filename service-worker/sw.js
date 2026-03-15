@@ -1,23 +1,9 @@
-self.addEventListener("install", (event) =>
-  event.waitUntil(self.skipWaiting())
-);
-self.addEventListener("activate", (event) =>
-  event.waitUntil(self.clients.claim())
-);
-self.addEventListener('install', (event) => {
-  console.log('[SW] Installed');
-  self.skipWaiting();
-});
-self.addEventListener('activate', (event) => {
-  console.log('[SW] Activated');
-  event.waitUntil(self.clients.claim());
-});
-self.addEventListener('fetch', (event) => {
-  console.log('[SW] Fetch:', event.request.url);
+self.addEventListener("install", (event) => {
+  event.waitUntil(self.skipWaiting());
 });
 
-self.addEventListener('message', (event) => {
-  console.log('[SW] Received message:', event.data);
+self.addEventListener("activate", (event) => {
+  event.waitUntil(self.clients.claim());
 });
 
 const config = require("./config");
@@ -25,7 +11,6 @@ const config = require("./config");
 let streamController, fileName, theKey, state, header, salt, encRx, encTx, decRx, decTx;
 
 self.addEventListener("fetch", (e) => {
-  // console.log(e); // log fetch event
   if (e.request.url.startsWith(config.APP_URL)) {
     const stream = new ReadableStream({
       start(controller) {
@@ -46,7 +31,7 @@ const _sodium = require("libsodium-wrappers");
   await _sodium.ready;
   const sodium = _sodium;
 
-  addEventListener("message", (e) => {
+  self.addEventListener("message", (e) => {
     switch (e.data.cmd) {
       case "prepareFileNameEnc":
         assignFileNameEnc(e.data.fileName, e.source);
