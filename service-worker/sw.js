@@ -1,23 +1,9 @@
-self.addEventListener("install", (event) =>
-  event.waitUntil(self.skipWaiting())
-);
-self.addEventListener("activate", (event) =>
-  event.waitUntil(self.clients.claim())
-);
-self.addEventListener('install', (event) => {
-  console.log('[SW] Installed');
-  self.skipWaiting();
-});
-self.addEventListener('activate', (event) => {
-  console.log('[SW] Activated');
-  event.waitUntil(self.clients.claim());
-});
-self.addEventListener('fetch', (event) => {
-  console.log('[SW] Fetch:', event.request.url);
+self.addEventListener("install", (event) => {
+  event.waitUntil(self.skipWaiting());
 });
 
-self.addEventListener('message', (event) => {
-  console.log('[SW] Received message:', event.data);
+self.addEventListener("activate", (event) => {
+  event.waitUntil(self.clients.claim());
 });
 
 const config = require("./config");
@@ -25,7 +11,6 @@ const config = require("./config");
 let streamController, fileName, theKey, state, header, salt, encRx, encTx, decRx, decTx;
 
 self.addEventListener("fetch", (e) => {
-  // console.log(e); // log fetch event
   if (e.request.url.startsWith(config.APP_URL)) {
     const stream = new ReadableStream({
       start(controller) {
@@ -46,7 +31,7 @@ const _sodium = require("libsodium-wrappers");
   await _sodium.ready;
   const sodium = _sodium;
 
-  addEventListener("message", (e) => {
+  self.addEventListener("message", (e) => {
     switch (e.data.cmd) {
       case "prepareFileNameEnc":
         assignFileNameEnc(e.data.fileName, e.source);
@@ -121,7 +106,6 @@ const _sodium = require("libsodium-wrappers");
         break;
 
       case "pingSW":
-        // console.log("SW running");
         break;
     }
   });
@@ -190,15 +174,13 @@ const _sodium = require("libsodium-wrappers");
 
   const asymmetricEncryptFirstChunk = (chunk, last, client) => {
     setTimeout(function () {
-      if (!streamController) {
-        console.log("stream does not exist");
-      }
       const SIGNATURE = new Uint8Array(
         config.encoder.encode(config.sigCodes["v2_asymmetric"])
       );
-      console.log(streamController)
-      streamController.enqueue(SIGNATURE);
-      streamController.enqueue(header);
+      if (streamController) {
+        streamController.enqueue(SIGNATURE);
+        streamController.enqueue(header);
+      }
 
       let tag = last
         ? sodium.crypto_secretstream_xchacha20poly1305_TAG_FINAL
@@ -211,10 +193,14 @@ const _sodium = require("libsodium-wrappers");
         tag
       );
 
-      streamController.enqueue(new Uint8Array(encryptedChunk));
+      if (streamController) {
+        streamController.enqueue(new Uint8Array(encryptedChunk));
+      }
 
       if (last) {
-        streamController.close();
+        if (streamController) {
+          streamController.close();
+        }
         client.postMessage({ reply: "encryptionFinished" });
       }
 
@@ -244,16 +230,15 @@ const _sodium = require("libsodium-wrappers");
   };
 
   const encryptFirstChunk = (chunk, last, client) => {
-    if (!streamController) {
-      console.log("stream does not exist");
-    }
     const SIGNATURE = new Uint8Array(
       config.encoder.encode(config.sigCodes["v2_symmetric"])
     );
 
-    streamController.enqueue(SIGNATURE);
-    streamController.enqueue(salt);
-    streamController.enqueue(header);
+    if (streamController) {
+      streamController.enqueue(SIGNATURE);
+      streamController.enqueue(salt);
+      streamController.enqueue(header);
+    }
 
     let tag = last
       ? sodium.crypto_secretstream_xchacha20poly1305_TAG_FINAL
@@ -266,10 +251,14 @@ const _sodium = require("libsodium-wrappers");
       tag
     );
 
-    streamController.enqueue(new Uint8Array(encryptedChunk));
+    if (streamController) {
+      streamController.enqueue(new Uint8Array(encryptedChunk));
+    }
 
     if (last) {
-      streamController.close();
+      if (streamController) {
+        streamController.close();
+      }
       client.postMessage({ reply: "encryptionFinished" });
     }
 

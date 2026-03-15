@@ -8,13 +8,8 @@ import {
   Typography,
   CircularProgress
 } from '@mui/material';
-import { FileUtils, FileInfo } from '../utils/fileUtils';
+import { FileUtils } from '../utils/fileUtils';
 import { getTranslations as t } from '../../locales';
-// interface FileInfoDialogProps {
-//   file: File | null;
-//   display: boolean;
-//   onClose: () => void;
-// }
 
 const FileInfoDialog = ({ file, display, onClose }) => {
   const [fileInfo, setFileInfo] = useState(null);
