@@ -106,7 +106,6 @@ const _sodium = require("libsodium-wrappers");
         break;
 
       case "pingSW":
-        // console.log("SW running");
         break;
     }
   });
@@ -175,15 +174,13 @@ const _sodium = require("libsodium-wrappers");
 
   const asymmetricEncryptFirstChunk = (chunk, last, client) => {
     setTimeout(function () {
-      if (!streamController) {
-        console.log("stream does not exist");
-      }
       const SIGNATURE = new Uint8Array(
         config.encoder.encode(config.sigCodes["v2_asymmetric"])
       );
-      console.log(streamController)
-      streamController.enqueue(SIGNATURE);
-      streamController.enqueue(header);
+      if (streamController) {
+        streamController.enqueue(SIGNATURE);
+        streamController.enqueue(header);
+      }
 
       let tag = last
         ? sodium.crypto_secretstream_xchacha20poly1305_TAG_FINAL
@@ -196,10 +193,14 @@ const _sodium = require("libsodium-wrappers");
         tag
       );
 
-      streamController.enqueue(new Uint8Array(encryptedChunk));
+      if (streamController) {
+        streamController.enqueue(new Uint8Array(encryptedChunk));
+      }
 
       if (last) {
-        streamController.close();
+        if (streamController) {
+          streamController.close();
+        }
         client.postMessage({ reply: "encryptionFinished" });
       }
 
@@ -229,16 +230,15 @@ const _sodium = require("libsodium-wrappers");
   };
 
   const encryptFirstChunk = (chunk, last, client) => {
-    if (!streamController) {
-      console.log("stream does not exist");
-    }
     const SIGNATURE = new Uint8Array(
       config.encoder.encode(config.sigCodes["v2_symmetric"])
     );
 
-    streamController.enqueue(SIGNATURE);
-    streamController.enqueue(salt);
-    streamController.enqueue(header);
+    if (streamController) {
+      streamController.enqueue(SIGNATURE);
+      streamController.enqueue(salt);
+      streamController.enqueue(header);
+    }
 
     let tag = last
       ? sodium.crypto_secretstream_xchacha20poly1305_TAG_FINAL
@@ -251,10 +251,14 @@ const _sodium = require("libsodium-wrappers");
       tag
     );
 
-    streamController.enqueue(new Uint8Array(encryptedChunk));
+    if (streamController) {
+      streamController.enqueue(new Uint8Array(encryptedChunk));
+    }
 
     if (last) {
-      streamController.close();
+      if (streamController) {
+        streamController.close();
+      }
       client.postMessage({ reply: "encryptionFinished" });
     }
 

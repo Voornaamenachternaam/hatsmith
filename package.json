@@ -3,8 +3,8 @@
   "version": "3.0.0",
   "private": true,
   "scripts": {
-    "dev": "esbuild service-worker/sw.js --bundle --outfile=public/service-worker.js && next dev",
-    "build": "esbuild service-worker/sw.js --bundle --outfile=public/service-worker.js && next build",
+    "dev": "esbuild service-worker/sw.js --bundle --minify --target=es2021 --platform=browser --outfile=public/service-worker.js && next dev",
+    "build": "esbuild service-worker/sw.js --bundle --minify --target=es2021 --platform=browser --outfile=public/service-worker.js && next build",
     "postbuild": "node ./post-build.js",
     "start": "next start -p 3991",
     "lint": "next lint",
