@@ -24,7 +24,7 @@
     "cypress": "^14.4.1",
     "libsodium-wrappers": "^0.8.2",
     "marked": "17.0.4",
-    "next": "^16.1.7",
+    "next": "^16.2.0",
     "prismjs": "^1.28.0",
     "qrcode.react": "^4.2.0",
     "react": "^19.2.3",
