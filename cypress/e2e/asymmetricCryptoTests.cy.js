@@ -4,7 +4,6 @@
 // Avoid running all test files at the same time
 
 import { currentVersion } from "../../src/config/Constants";
-import "cypress-real-events/support";
 
 const path = require("path");
 const downloadsFolder = Cypress.config("downloadsFolder");
@@ -36,7 +35,7 @@ const downloadCurrentFile = (selector) => {
       });
     });
 
-    cy.get(selector).realClick();
+    cy.get(selector).click({ force: true });
   });
 };
 
@@ -52,13 +51,13 @@ describe("Asymmetric encryption test", () => {
     cy.contains("Choose files to encrypt");
     cy.get(".submitFile").should("be.disabled");
     cy.get("#enc-file").selectFile(documentFixture, { force: true });
-    cy.get(".submitFile").realClick();
+    cy.get(".submitFile").click({ force: true });
 
     cy.wait(500);
     cy.contains("Choose a strong Password");
     cy.get(".submitKeys").should("be.disabled");
-    cy.get(".publicKeyInput").realClick();
-    cy.contains("Generate now").realClick();
+    cy.get(".publicKeyInput").click({ force: true });
+    cy.contains("Generate now").click({ force: true });
     cy.get(".keyPairGenerateBtn").click();
 
     cy.get("#generatedPublicKey")
@@ -90,23 +89,23 @@ describe("Asymmetric encryption test", () => {
       });
 
     cy.log(bobKeys);
-    cy.get("#closeGenBtn").realClick();
+    cy.get("#closeGenBtn").click({ force: true });
 
     cy.wait(500);
 
     cy.get("#public-key-input")
-      .realClick()
+      .click({ force: true })
       .then(() => {
-        cy.realType(bobKeys.publicKey);
+        cy.focused().type(bobKeys.publicKey, { parseSpecialCharSequences: false });
       });
 
     cy.get("#private-key-input")
-      .realClick()
+      .click({ force: true })
       .then(() => {
-        cy.realType(aliceKeys.privateKey);
+        cy.focused().type(aliceKeys.privateKey, { parseSpecialCharSequences: false });
       });
 
-    cy.get(".submitKeys").realClick();
+    cy.get(".submitKeys").click({ force: true });
 
     cy.wait(500);
     downloadCurrentFile(".downloadFile");
@@ -128,7 +127,7 @@ describe("Asymmetric encryption test", () => {
       path.join(downloadsFolder, "document.txt.enc"),
       { force: true },
     );
-    cy.get(".submitFileDec").realClick();
+    cy.get(".submitFileDec").click({ force: true });
     cy.wait(500);
 
     cy.contains("Enter sender's Public key and your Private Key");
@@ -136,18 +135,18 @@ describe("Asymmetric encryption test", () => {
     cy.wait(500);
 
     cy.get("#public-key-input-dec")
-      .realClick()
+      .click({ force: true })
       .then(() => {
-        cy.realType(aliceKeys.publicKey);
+        cy.focused().type(aliceKeys.publicKey, { parseSpecialCharSequences: false });
       });
 
     cy.get("#private-key-input-dec")
-      .realClick()
+      .click({ force: true })
       .then(() => {
-        cy.realType(bobKeys.privateKey);
+        cy.focused().type(bobKeys.privateKey, { parseSpecialCharSequences: false });
       });
 
-    cy.get(".submitKeysDec").realClick();
+    cy.get(".submitKeysDec").click({ force: true });
 
     cy.wait(500);
     downloadCurrentFile(".downloadFileDec");
