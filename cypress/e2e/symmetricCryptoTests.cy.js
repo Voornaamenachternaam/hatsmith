@@ -4,7 +4,6 @@
 // Avoid running all test files at the same time
 
 import { currentVersion } from "../../src/config/Constants";
-import "cypress-real-events/support";
 
 const path = require("path");
 const downloadsFolder = Cypress.config("downloadsFolder");
@@ -35,7 +34,7 @@ const downloadCurrentFile = (selector) => {
       });
     });
 
-    cy.get(selector).realClick();
+    cy.get(selector).click({ force: true });
   });
 };
 
@@ -51,19 +50,19 @@ describe("Symmetric encryption test", () => {
     cy.contains("Choose files to encrypt");
     cy.get(".submitFile").should("be.disabled");
     cy.get("#enc-file").selectFile(documentFixture, { force: true });
-    cy.get(".submitFile").realClick();
+    cy.get(".submitFile").click({ force: true });
 
     cy.wait(500);
     cy.contains("Choose a strong Password");
     cy.get(".submitKeys").should("be.disabled");
-    cy.get(".generatePasswordBtn").realClick();
+    cy.get(".generatePasswordBtn").click({ force: true });
     cy.get("#encPasswordInput")
       .invoke("val")
       .then((val) => {
         encryptionPassword = val;
         cy.log(encryptionPassword);
       });
-    cy.get(".submitKeys").realClick();
+    cy.get(".submitKeys").click({ force: true });
 
     cy.wait(500);
     downloadCurrentFile(".downloadFile");
@@ -85,14 +84,14 @@ describe("Symmetric encryption test", () => {
       path.join(downloadsFolder, "document.txt.enc"),
       { force: true },
     );
-    cy.get(".submitFileDec").realClick();
+    cy.get(".submitFileDec").click({ force: true });
     cy.wait(500);
 
     cy.contains("Enter the decryption password");
     cy.get(".submitKeysDec").should("be.disabled");
-    cy.get(".decPasswordInput").realClick();
-    cy.realType(encryptionPassword);
-    cy.get(".submitKeysDec").realClick();
+    cy.get(".decPasswordInput").click({ force: true });
+    cy.focused().type(encryptionPassword, { parseSpecialCharSequences: false });
+    cy.get(".submitKeysDec").click({ force: true });
 
     cy.wait(500);
     downloadCurrentFile(".downloadFileDec");

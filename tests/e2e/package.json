@@ -1,0 +1,11 @@
+{
+  "name": "hatsmith-e2e",
+  "private": true,
+  "scripts": {
+    "test": "cypress run --project ../..",
+    "test:open": "cypress open --project ../.."
+  },
+  "devDependencies": {
+    "cypress": "^15.12.0"
+  }
+}
