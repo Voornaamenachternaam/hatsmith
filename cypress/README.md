@@ -1,25 +1,28 @@
-### Testing with cypress
+### Testing with Cypress
 
-- cypress and it's dependencies have to be installed
-- The app has to be running in dev mode
-- Tests are done on chrome
-- Avoid running all test files at the same time
+- Install the project dependencies from the repository root.
+- Run the app in development mode before starting the Cypress runner.
+- The end-to-end suite targets Chrome-family browsers.
+- The specs share the downloads folder, so run them serially.
 
 <br>
 
-move to the hat.sh app root directory
+Move to the Hatsmith app root directory:
 
-`cd hat.sh`
+`cd /workspace/hatsmith`
 
-install cypress/dependencies:
+Install dependencies:
 
-`npm install cypress@8.7.0 cypress-file-upload@5.0.8 cypress-real-events@1.5.1 --save-dev`
+`npm install`
 
-run the app in dev enviroment: 
+Run the app in development environment:
 
 `npm run dev`
 
-start cypress testing :
+Start Cypress interactive testing:
 
 `npm run test`
 
+Run the Cypress suite headlessly:
+
+`npx cypress run --browser chrome`
