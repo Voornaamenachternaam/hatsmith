@@ -1,8 +1,8 @@
 // eslint.config.js (CommonJS)
 const js = require('@eslint/js');
 const globals = require('globals');
+const nextPlugin = require('@next/eslint-plugin-next');
 const reactHooks = require('eslint-plugin-react-hooks');
-const { reactRefresh } = require('eslint-plugin-react-refresh');
 const cypress = require('eslint-plugin-cypress');
 
 /** @type {import('eslint').Linter.Config[]} */
@@ -41,33 +41,19 @@ module.exports = [
     }
   },
 
-  // React/Next.js specific configuration for src files
+  // React/Next.js specific configuration
   {
-    files: ['src/**/*.{js,jsx}'],
+    files: ['src/**/*.{js,jsx}', 'pages/**/*.{js,jsx}'],
     plugins: {
-      'react-hooks': reactHooks,
-      'react-refresh': reactRefresh.plugin
+      '@next/next': nextPlugin,
+      'react-hooks': reactHooks
     },
     rules: {
+      ...nextPlugin.configs.recommended.rules,
+      ...nextPlugin.configs['core-web-vitals'].rules,
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
-      'react-refresh/only-export-components': [
-        'warn',
-        { allowConstantExport: true }
-      ]
-    }
-  },
-
-  // Next.js pages and app directory configuration
-  {
-    files: ['pages/**/*.js', 'app/**/*.js'],
-    plugins: {
-      'react-hooks': reactHooks,
-      'react-refresh': reactRefresh.plugin
-    },
-    rules: {
-      'react-hooks/rules-of-hooks': 'error',
-      'react-hooks/exhaustive-deps': 'warn'
+      '@next/next/no-html-link-for-pages': 'off'
     }
   },
 

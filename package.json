@@ -7,8 +7,10 @@
     "build": "esbuild service-worker/sw.js --bundle --minify --target=es2021 --platform=browser --outfile=public/service-worker.js && next build",
     "postbuild": "node ./post-build.js",
     "start": "next start -p 3991",
-    "lint": "next lint",
-    "test": "cypress open"
+    "lint": "eslint .",
+    "test": "npm --prefix tests/e2e run test",
+    "test:open": "npm --prefix tests/e2e run test:open",
+    "test:setup": "npm --prefix tests/e2e install"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -21,7 +23,6 @@
     "@zxcvbn-ts/core": "^3.0.4",
     "@zxcvbn-ts/language-common": "^3.0.4",
     "@zxcvbn-ts/language-en": "^3.0.2",
-    "cypress": "^15.12.0",
     "libsodium-wrappers": "^0.8.2",
     "marked": "17.0.4",
     "next": "^16.2.0",
@@ -34,13 +35,11 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "cypress-real-events": "^1.15.0",
+    "@next/eslint-plugin-next": "^16.2.0",
     "esbuild": "^0.27.4",
     "eslint": "^10.0.1",
-    "eslint-config-next": "^16.2.0",
     "eslint-plugin-cypress": "^6.1.0",
     "eslint-plugin-react-hooks": "7.1.0-canary-ab18f33d-20260220",
-    "eslint-plugin-react-refresh": "^0.5.0",
     "globals": "^17.3.0"
   }
 }
