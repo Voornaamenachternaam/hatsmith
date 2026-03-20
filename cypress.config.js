@@ -1,5 +1,6 @@
 const path = require('path');
 const fs = require('fs/promises');
+const { defineConfig } = require('cypress');
 
 module.exports = defineConfig({
   e2e: {
