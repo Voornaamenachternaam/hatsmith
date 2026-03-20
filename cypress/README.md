@@ -21,7 +21,7 @@ Run the app in development environment:
 
 Start Cypress interactive testing:
 
-`npm run test`
+`npm run test:open`
 
 Run the Cypress suite headlessly:
 
