@@ -28,7 +28,7 @@ const downloadCurrentFile = (selector) => {
       { once: true },
     );
 
-    cy.intercept("GET", "/").as("pageReload");
+    cy.intercept({ method: "GET", pathname: "/" }).as("pageReload");
 
     cy.get(selector).click({ force: true });
   });
