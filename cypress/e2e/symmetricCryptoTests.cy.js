@@ -28,14 +28,11 @@ const downloadCurrentFile = (selector) => {
       { once: true },
     );
 
-    cy.intercept("/", (req) => {
-      req.reply((res) => {
-        expect(res.statusCode).to.equal(200);
-      });
-    });
+    cy.intercept("GET", "/").as("pageReload");
 
     cy.get(selector).click({ force: true });
   });
+  cy.wait("@pageReload").its("response.statusCode").should("eq", 200);
 };
 
 describe("Symmetric encryption test", () => {
