@@ -37,7 +37,7 @@
     "browserify": "^17.0.0",
     "cypress-file-upload": "^5.0.8",
     "cypress-real-events": "^1.14.0",
-    "eslint": "^10.0.1",
+    "eslint": "^10.1.0",
     "eslint-config-next": "^16.1.6",
     "eslint-plugin-cypress": "^6.1.0",
     "eslint-plugin-react-hooks": "7.1.0-canary-ab18f33d-20260220",
