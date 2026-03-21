@@ -25,4 +25,4 @@ Start Cypress interactive testing:
 
 Run the Cypress suite headlessly:
 
-`npx cypress run --browser chrome`
+`npm run test`
