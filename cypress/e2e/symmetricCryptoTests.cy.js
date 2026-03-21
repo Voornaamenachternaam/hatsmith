@@ -72,7 +72,7 @@ describe("Symmetric encryption test", () => {
   });
 
   it("loads a file and decrypt", () => {
-    cy.visit(`${Cypress.config("baseUrl")}/?tab=decryption`);
+    cy.visit("/?tab=decryption");
     cy.wait(2500);
 
     cy.contains("Choose files to decrypt");
