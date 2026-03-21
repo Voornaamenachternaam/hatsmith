@@ -37,26 +37,6 @@ const downloadCurrentFile = (selector) => {
     cy.get(selector).click({ force: true });
   });
 };
-  cy.window().document().then((doc) => {
-    doc.addEventListener(
-      "click",
-      () => {
-        setTimeout(() => {
-          doc.location.reload();
-        }, 2500);
-      },
-      { once: true },
-    );
-
-    cy.intercept("/", (req) => {
-      req.reply((res) => {
-        expect(res.statusCode).to.equal(200);
-      });
-    });
-
-    cy.get(selector).click({ force: true });
-  });
-};
 
 describe("Asymmetric encryption test", () => {
   beforeEach(() => {
