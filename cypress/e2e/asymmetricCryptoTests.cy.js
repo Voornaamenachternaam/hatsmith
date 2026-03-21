@@ -18,6 +18,25 @@ let aliceKeys = { publicKey: null, privateKey: null };
 let bobKeys = { publicKey: null, privateKey: null };
 
 const downloadCurrentFile = (selector) => {
+  cy.intercept("/", (req) => {
+    req.reply((res) => {
+      expect(res.statusCode).to.equal(200);
+    });
+  });
+
+  cy.window().then((win) => {
+    win.document.addEventListener(
+      "click",
+      () => {
+        setTimeout(() => {
+          win.location.reload();
+        }, 2500);
+      },
+      { once: true },
+    );
+    cy.get(selector).click({ force: true });
+  });
+};
   cy.window().document().then((doc) => {
     doc.addEventListener(
       "click",
