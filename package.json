@@ -22,7 +22,7 @@
     "@zxcvbn-ts/language-common": "^3.0.4",
     "@zxcvbn-ts/language-en": "^3.0.2",
     "cypress": "^14.4.1",
-    "libsodium-wrappers": "^0.7.10",
+    "libsodium-wrappers": "^0.8.2",
     "marked": "17.0.5",
     "next": "^16.2.1",
     "prismjs": "^1.30.0",
