@@ -9,7 +9,7 @@
     "start": "next start -p 3991",
     "lint": "eslint .",
     "test": "npm --prefix tests/e2e install && npm --prefix tests/e2e run test",
-    "test:open": "npm --prefix tests/e2e run test:open",
+    "test:open": "npm run test:setup && npm --prefix tests/e2e run test:open",
     "test:setup": "npm --prefix tests/e2e install"
   },
   "dependencies": {
