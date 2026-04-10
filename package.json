@@ -15,7 +15,7 @@
     "@emotion/server": "^11.11.0",
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "^7.3.9",
-    "@mui/lab": "^7.0.1-beta.23",
+    "@mui/lab": "^7.0.1-beta.24",
     "@mui/material": "^7.3.9",
     "@mui/system": "^7.3.9",
     "@zxcvbn-ts/core": "^3.0.4",
