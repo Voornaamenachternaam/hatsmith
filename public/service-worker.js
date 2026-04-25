@@ -20,7 +20,7 @@ self.addEventListener('message', (event) => {
   console.log('[SW] Received message:', event.data);
 });
 
-importScripts("/libsodium-wrappers.js");
+importScripts("/libsodium.js", "/libsodium-wrappers.js");
 
 const config = {
   APP_URL: self.location.origin + "/file",

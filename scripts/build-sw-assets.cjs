@@ -20,21 +20,29 @@ function copyFile(relativeSource, relativeDestination, { required = true } = {})
   return true;
 }
 
-function copyFirstAvailable(candidates, destination) {
+function copyFirstAvailable(assetName, candidates, destination) {
   for (const candidate of candidates) {
     if (copyFile(candidate, destination, { required: false })) {
       return candidate;
     }
   }
 
-  throw new Error(
-    `Could not find a libsodium wrapper build. Tried: ${candidates.join(', ')}`
-  );
+  throw new Error(`Could not find ${assetName}. Tried: ${candidates.join(', ')}`);
 }
 
 copyFile('service-worker/sw.js', 'public/service-worker.js');
 
+const selectedLibsodiumCore = copyFirstAvailable(
+  'a libsodium core build',
+  [
+    'node_modules/libsodium-wrappers/dist/browsers/libsodium.js',
+    'node_modules/libsodium/dist/modules/libsodium.js'
+  ],
+  'public/libsodium.js'
+);
+
 const selectedWrapper = copyFirstAvailable(
+  'a libsodium wrapper build',
   [
     'node_modules/libsodium-wrappers/dist/browsers/libsodium-wrappers.js',
     'node_modules/libsodium-wrappers/dist/modules/libsodium-wrappers.js'
@@ -48,4 +56,6 @@ copyFile(
   { required: false }
 );
 
-console.log(`Copied service worker assets using ${selectedWrapper}`);
+console.log(
+  `Copied service worker assets using ${selectedLibsodiumCore} and ${selectedWrapper}`
+);
