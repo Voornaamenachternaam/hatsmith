@@ -3,7 +3,7 @@
   "version": "3.0.0",
   "private": true,
   "scripts": {
-    "build:sw": "cp service-worker/sw.js public/service-worker.js && cp node_modules/libsodium-wrappers/dist/browsers/libsodium-wrappers.js public/libsodium-wrappers.js && cp node_modules/libsodium-wrappers/dist/browsers/libsodium-wrappers.wasm public/libsodium-wrappers.wasm",
+    "build:sw": "node scripts/build-sw-assets.cjs",
     "dev": "npm run build:sw && next dev",
     "build": "npm run build:sw && next build",
     "postbuild": "node ./post-build.js",
