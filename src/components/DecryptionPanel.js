@@ -344,7 +344,7 @@ export default function DecryptionPanel() {
   const kickOffDecryption = async (e) => {
     if (currFile <= numberOfFiles - 1) {
       file = files[currFile];
-      window.open(`file`, "_self");
+      window.open("/file", "_self");
       setIsDownloading(true);
 
       if (decryptionMethodState === "secretKey") {

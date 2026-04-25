@@ -43,11 +43,13 @@ self.addEventListener("fetch", (e) => {
         streamController = controller;
       },
     });
-    const response = new Response(stream);
-    response.headers.append(
-      "Content-Disposition",
-      'attachment; filename="' + fileName + '"'
-    );
+    const response = new Response(stream, {
+      headers: {
+        "Content-Type": "application/octet-stream",
+        "Content-Disposition": 'attachment; filename="' + fileName + '"',
+        "Cache-Control": "no-store"
+      }
+    });
     e.respondWith(response);
   }
 });
