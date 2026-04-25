@@ -82,7 +82,7 @@ jobs:
 
       - name: Create or update Pull Request with fixes
         if: ${{ always() }}
-        uses: peter-evans/create-pull-request@v8.1.0
+        uses: peter-evans/create-pull-request@v8.1.1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           base: ${{ steps.target_branch.outputs.branch }}
