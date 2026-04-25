@@ -36,6 +36,7 @@ let file,
   encryptionMethodState = "secretKey",
   privateKey,
   publicKey;
+const DOWNLOAD_WINDOW_NAME = "hatsmith-download-window";
 
 export default function EncryptionPanel() {
   const router = useRouter();
@@ -256,7 +257,7 @@ export default function EncryptionPanel() {
 
   const handleEncryptedFilesDownload = async (e) => {
     if (typeof window !== "undefined") {
-      const downloadWindow = window.open("about:blank", "_blank");
+      const downloadWindow = window.open("about:blank", DOWNLOAD_WINDOW_NAME);
       if (downloadWindow) {
         downloadWindow.document.title = "Preparing encrypted download...";
         downloadWindowRef.current = downloadWindow;
@@ -307,13 +308,8 @@ export default function EncryptionPanel() {
         ? `${window.location.origin}/file?stream=${Date.now()}`
         : `/file?stream=${Date.now()}`;
 
-    if (downloadWindowRef.current && !downloadWindowRef.current.closed) {
-      downloadWindowRef.current.location.replace(streamUrl);
-      return;
-    }
-
     if (typeof window !== "undefined") {
-      window.open(streamUrl, "_blank");
+      downloadWindowRef.current = window.open(streamUrl, DOWNLOAD_WINDOW_NAME);
     }
   };
 
