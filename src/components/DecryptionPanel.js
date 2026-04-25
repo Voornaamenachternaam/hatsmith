@@ -586,6 +586,9 @@ export default function DecryptionPanel() {
             handleNext();
           }
           break;
+        case "workerError":
+          setIsDownloading(false);
+          break;
       }
     };
     navigator.serviceWorker.addEventListener("message", messageHandler);

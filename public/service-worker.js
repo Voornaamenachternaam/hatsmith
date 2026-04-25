@@ -58,8 +58,23 @@ self.addEventListener("fetch", (e) => {
   await self.sodium.ready;
   const sodium = self.sodium;
 
-  addEventListener("message", (e) => {
-    switch (e.data.cmd) {
+  const waitForStreamController = async () => {
+    const timeoutMs = 10000;
+    const start = Date.now();
+
+    while (!streamController) {
+      if (Date.now() - start > timeoutMs) {
+        throw new Error("Timed out waiting for download stream initialization");
+      }
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    }
+
+    return streamController;
+  };
+
+  addEventListener("message", async (e) => {
+    try {
+      switch (e.data.cmd) {
       case "prepareFileNameEnc":
         assignFileNameEnc(e.data.fileName, e.source);
         break;
@@ -77,15 +92,15 @@ self.addEventListener("fetch", (e) => {
         break;
 
       case "asymmetricEncryptFirstChunk":
-        asymmetricEncryptFirstChunk(e.data.chunk, e.data.last, e.source);
+        await asymmetricEncryptFirstChunk(e.data.chunk, e.data.last, e.source);
         break;
 
       case "encryptFirstChunk":
-        encryptFirstChunk(e.data.chunk, e.data.last, e.source);
+        await encryptFirstChunk(e.data.chunk, e.data.last, e.source);
         break;
 
       case "encryptRestOfChunks":
-        encryptRestOfChunks(e.data.chunk, e.data.last, e.source);
+        await encryptRestOfChunks(e.data.chunk, e.data.last, e.source);
         break;
 
       case "checkFile":
@@ -125,16 +140,20 @@ self.addEventListener("fetch", (e) => {
         break;
 
       case "decryptFirstChunk":
-        decryptChunks(e.data.chunk, e.data.last, e.source);
+        await decryptChunks(e.data.chunk, e.data.last, e.source);
         break;
 
       case "decryptRestOfChunks":
-        decryptChunks(e.data.chunk, e.data.last, e.source);
+        await decryptChunks(e.data.chunk, e.data.last, e.source);
         break;
 
-      case "pingSW":
-        // console.log("SW running");
-        break;
+        case "pingSW":
+          // console.log("SW running");
+          break;
+      }
+    } catch (error) {
+      console.error("Service worker command failed:", e.data?.cmd, error);
+      e.source?.postMessage?.({ reply: "workerError" });
     }
   });
 
@@ -200,40 +219,36 @@ self.addEventListener("fetch", (e) => {
     }
   };
 
-  const asymmetricEncryptFirstChunk = (chunk, last, client) => {
-    setTimeout(function () {
-      if (!streamController) {
-        console.log("stream does not exist");
-      }
-      const SIGNATURE = new Uint8Array(
-        config.encoder.encode(config.sigCodes["v2_asymmetric"])
-      );
-      console.log(streamController)
-      streamController.enqueue(SIGNATURE);
-      streamController.enqueue(header);
+  const asymmetricEncryptFirstChunk = async (chunk, last, client) => {
+    const controller = await waitForStreamController();
+    const SIGNATURE = new Uint8Array(
+      config.encoder.encode(config.sigCodes["v2_asymmetric"])
+    );
+    controller.enqueue(SIGNATURE);
+    controller.enqueue(header);
 
-      let tag = last
-        ? sodium.crypto_secretstream_xchacha20poly1305_TAG_FINAL
-        : sodium.crypto_secretstream_xchacha20poly1305_TAG_MESSAGE;
+    let tag = last
+      ? sodium.crypto_secretstream_xchacha20poly1305_TAG_FINAL
+      : sodium.crypto_secretstream_xchacha20poly1305_TAG_MESSAGE;
 
-      let encryptedChunk = sodium.crypto_secretstream_xchacha20poly1305_push(
-        state,
-        new Uint8Array(chunk),
-        null,
-        tag
-      );
+    let encryptedChunk = sodium.crypto_secretstream_xchacha20poly1305_push(
+      state,
+      new Uint8Array(chunk),
+      null,
+      tag
+    );
 
-      streamController.enqueue(new Uint8Array(encryptedChunk));
+    controller.enqueue(new Uint8Array(encryptedChunk));
 
-      if (last) {
-        streamController.close();
-        client.postMessage({ reply: "encryptionFinished" });
-      }
+    if (last) {
+      controller.close();
+      streamController = null;
+      client.postMessage({ reply: "encryptionFinished" });
+    }
 
-      if (!last) {
-        client.postMessage({ reply: "continueEncryption" });
-      }
-    }, 500);
+    if (!last) {
+      client.postMessage({ reply: "continueEncryption" });
+    }
   };
 
   let encKeyGenerator = (password, client) => {
@@ -255,17 +270,15 @@ self.addEventListener("fetch", (e) => {
     client.postMessage({ reply: "keysGenerated" });
   };
 
-  const encryptFirstChunk = (chunk, last, client) => {
-    if (!streamController) {
-      console.log("stream does not exist");
-    }
+  const encryptFirstChunk = async (chunk, last, client) => {
+    const controller = await waitForStreamController();
     const SIGNATURE = new Uint8Array(
       config.encoder.encode(config.sigCodes["v2_symmetric"])
     );
 
-    streamController.enqueue(SIGNATURE);
-    streamController.enqueue(salt);
-    streamController.enqueue(header);
+    controller.enqueue(SIGNATURE);
+    controller.enqueue(salt);
+    controller.enqueue(header);
 
     let tag = last
       ? sodium.crypto_secretstream_xchacha20poly1305_TAG_FINAL
@@ -278,10 +291,11 @@ self.addEventListener("fetch", (e) => {
       tag
     );
 
-    streamController.enqueue(new Uint8Array(encryptedChunk));
+    controller.enqueue(new Uint8Array(encryptedChunk));
 
     if (last) {
-      streamController.close();
+      controller.close();
+      streamController = null;
       client.postMessage({ reply: "encryptionFinished" });
     }
 
@@ -290,7 +304,8 @@ self.addEventListener("fetch", (e) => {
     }
   };
 
-  const encryptRestOfChunks = (chunk, last, client) => {
+  const encryptRestOfChunks = async (chunk, last, client) => {
+    const controller = await waitForStreamController();
     let tag = last
       ? sodium.crypto_secretstream_xchacha20poly1305_TAG_FINAL
       : sodium.crypto_secretstream_xchacha20poly1305_TAG_MESSAGE;
@@ -302,10 +317,11 @@ self.addEventListener("fetch", (e) => {
       tag
     );
 
-    streamController.enqueue(encryptedChunk);
+    controller.enqueue(encryptedChunk);
 
     if (last) {
-      streamController.close();
+      controller.close();
+      streamController = null;
       client.postMessage({ reply: "encryptionFinished" });
     }
 
@@ -463,28 +479,28 @@ self.addEventListener("fetch", (e) => {
     }
   };
 
-  const decryptChunks = (chunk, last, client) => {
-    setTimeout(function () {
-      let result = sodium.crypto_secretstream_xchacha20poly1305_pull(
-        state,
-        new Uint8Array(chunk)
-      );
+  const decryptChunks = async (chunk, last, client) => {
+    const controller = await waitForStreamController();
+    let result = sodium.crypto_secretstream_xchacha20poly1305_pull(
+      state,
+      new Uint8Array(chunk)
+    );
 
-      if (result) {
-        let decryptedChunk = result.message;
+    if (result) {
+      let decryptedChunk = result.message;
 
-        streamController.enqueue(new Uint8Array(decryptedChunk));
+      controller.enqueue(new Uint8Array(decryptedChunk));
 
-        if (last) {
-          streamController.close();
-          client.postMessage({ reply: "decryptionFinished" });
-        }
-        if (!last) {
-          client.postMessage({ reply: "continueDecryption" });
-        }
-      } else {
-        client.postMessage({ reply: "wrongPassword" });
+      if (last) {
+        controller.close();
+        streamController = null;
+        client.postMessage({ reply: "decryptionFinished" });
       }
-    }, 500);
+      if (!last) {
+        client.postMessage({ reply: "continueDecryption" });
+      }
+    } else {
+      client.postMessage({ reply: "wrongPassword" });
+    }
   };
 })();

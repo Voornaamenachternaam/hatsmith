@@ -413,6 +413,9 @@ export default function EncryptionPanel() {
             handleNext();
           }
           break;
+        case "workerError":
+          setIsDownloading(false);
+          break;
       }
     };
     navigator.serviceWorker.addEventListener("message", messageHandler);
