@@ -3,8 +3,9 @@
   "version": "3.0.0",
   "private": true,
   "scripts": {
-    "dev": "browserify service-worker/sw.js -o public/service-worker.js && next dev",
-    "build": "browserify service-worker/sw.js -o public/service-worker.js && next build",
+    "build:sw": "cp service-worker/sw.js public/service-worker.js && cp node_modules/libsodium/dist/modules/libsodium.js public/libsodium.js && cp node_modules/libsodium-wrappers/dist/modules/libsodium-wrappers.js public/libsodium-wrappers.js",
+    "dev": "npm run build:sw && next dev",
+    "build": "npm run build:sw && next build",
     "postbuild": "node ./post-build.js",
     "start": "next start -p 3991",
     "lint": "next lint",
@@ -34,7 +35,6 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "browserify": "^17.0.0",
     "cypress-file-upload": "^5.0.8",
     "cypress-real-events": "^1.14.0",
     "eslint": "^10.2.1",
