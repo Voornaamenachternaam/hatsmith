@@ -16,7 +16,7 @@
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "^9.0.0",
     "@mui/lab": "9.0.0-beta.2",
-    "@mui/material": "^9.0.0,",
+    "@mui/material": "^9.0.0",
     "@mui/system": "^9.0.0",
     "@zxcvbn-ts/core": "^3.0.4",
     "@zxcvbn-ts/language-common": "^3.0.4",
