@@ -408,7 +408,10 @@ export default function DecryptionPanel() {
   };
 
   const triggerDownloadStream = () => {
-    const streamUrl = `/file?stream=${Date.now()}`;
+    const streamUrl =
+      typeof window !== "undefined"
+        ? `${window.location.origin}/file?stream=${Date.now()}`
+        : `/file?stream=${Date.now()}`;
 
     if (downloadWindowRef.current && !downloadWindowRef.current.closed) {
       downloadWindowRef.current.location.replace(streamUrl);
