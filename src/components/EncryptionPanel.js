@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import { useDropzone } from "react-dropzone";
 import { formatBytes } from "../helpers/formatBytes";
@@ -255,6 +255,14 @@ export default function EncryptionPanel() {
   };
 
   const handleEncryptedFilesDownload = async (e) => {
+    if (typeof window !== "undefined") {
+      const downloadWindow = window.open("about:blank", "_blank");
+      if (downloadWindow) {
+        downloadWindow.document.title = "Preparing encrypted download...";
+        downloadWindowRef.current = downloadWindow;
+      }
+    }
+
     numberOfFiles = Files.length;
     prepareFile();
   };
@@ -293,24 +301,17 @@ export default function EncryptionPanel() {
     }
   };
 
-  const removeDownloadFrame = () => {
-    if (typeof document === "undefined") return;
-    const existing = document.getElementById("hatsmith-download-frame");
-    if (existing) {
-      existing.remove();
-    }
-  };
-
   const triggerDownloadStream = () => {
-    if (typeof document === "undefined") return;
+    const streamUrl = `/file?stream=${Date.now()}`;
 
-    removeDownloadFrame();
+    if (downloadWindowRef.current && !downloadWindowRef.current.closed) {
+      downloadWindowRef.current.location.replace(streamUrl);
+      return;
+    }
 
-    const iframe = document.createElement("iframe");
-    iframe.id = "hatsmith-download-frame";
-    iframe.style.display = "none";
-    iframe.src = `/file?stream=${Date.now()}`;
-    document.body.appendChild(iframe);
+    if (typeof window !== "undefined") {
+      window.open(streamUrl, "_blank");
+    }
   };
 
   const startEncryption = (method) => {
@@ -426,18 +427,15 @@ export default function EncryptionPanel() {
               }, 1000);
             } else {
               setIsDownloading(false);
-              removeDownloadFrame();
               handleNext();
             }
           } else {
             setIsDownloading(false);
-            removeDownloadFrame();
             handleNext();
           }
           break;
         case "workerError":
           setIsDownloading(false);
-          removeDownloadFrame();
           break;
       }
     };
@@ -447,6 +445,7 @@ export default function EncryptionPanel() {
 
   const [selectedFile, setSelectedFile] = useState(null);
   const [showInfo, setShowInfo] = useState(false);
+  const downloadWindowRef = useRef(null);
 
   const handleOpenInfo = (file) => {
     setSelectedFile(file);
