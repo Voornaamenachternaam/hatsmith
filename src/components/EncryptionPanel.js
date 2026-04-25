@@ -269,7 +269,7 @@ export default function EncryptionPanel() {
   const kickOffEncryption = async () => {
     if (currFile <= numberOfFiles - 1) {
       file = files[currFile];
-      window.open("/file", "_self");
+      triggerDownloadStream();
       setIsDownloading(true);
 
       if (encryptionMethodState === "publicKey") {
@@ -291,6 +291,26 @@ export default function EncryptionPanel() {
         });
       }
     }
+  };
+
+  const removeDownloadFrame = () => {
+    if (typeof document === "undefined") return;
+    const existing = document.getElementById("hatsmith-download-frame");
+    if (existing) {
+      existing.remove();
+    }
+  };
+
+  const triggerDownloadStream = () => {
+    if (typeof document === "undefined") return;
+
+    removeDownloadFrame();
+
+    const iframe = document.createElement("iframe");
+    iframe.id = "hatsmith-download-frame";
+    iframe.style.display = "none";
+    iframe.src = `/file?stream=${Date.now()}`;
+    document.body.appendChild(iframe);
   };
 
   const startEncryption = (method) => {
@@ -406,15 +426,18 @@ export default function EncryptionPanel() {
               }, 1000);
             } else {
               setIsDownloading(false);
+              removeDownloadFrame();
               handleNext();
             }
           } else {
             setIsDownloading(false);
+            removeDownloadFrame();
             handleNext();
           }
           break;
         case "workerError":
           setIsDownloading(false);
+          removeDownloadFrame();
           break;
       }
     };

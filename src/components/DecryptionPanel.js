@@ -344,7 +344,7 @@ export default function DecryptionPanel() {
   const kickOffDecryption = async (e) => {
     if (currFile <= numberOfFiles - 1) {
       file = files[currFile];
-      window.open("/file", "_self");
+      triggerDownloadStream();
       setIsDownloading(true);
 
       if (decryptionMethodState === "secretKey") {
@@ -397,6 +397,26 @@ export default function DecryptionPanel() {
         });
       }
     }
+  };
+
+  const removeDownloadFrame = () => {
+    if (typeof document === "undefined") return;
+    const existing = document.getElementById("hatsmith-download-frame");
+    if (existing) {
+      existing.remove();
+    }
+  };
+
+  const triggerDownloadStream = () => {
+    if (typeof document === "undefined") return;
+
+    removeDownloadFrame();
+
+    const iframe = document.createElement("iframe");
+    iframe.id = "hatsmith-download-frame";
+    iframe.style.display = "none";
+    iframe.src = `/file?stream=${Date.now()}`;
+    document.body.appendChild(iframe);
   };
 
   const startDecryption = (method) => {
@@ -579,15 +599,18 @@ export default function DecryptionPanel() {
               }, 1000);
             } else {
               setIsDownloading(false);
+              removeDownloadFrame();
               handleNext();
             }
           } else {
             setIsDownloading(false);
+            removeDownloadFrame();
             handleNext();
           }
           break;
         case "workerError":
           setIsDownloading(false);
+          removeDownloadFrame();
           break;
       }
     };
