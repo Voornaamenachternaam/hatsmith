@@ -26,7 +26,7 @@ import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
 import StarsIcon from "@mui/icons-material/Stars";
 import GetAppIcon from "@mui/icons-material/GetApp";
 import EmojiObjectsIcon from "@mui/icons-material/EmojiObjects";
-import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutlineOutlined";
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 import LiveHelpIcon from "@mui/icons-material/LiveHelp";

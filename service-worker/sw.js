@@ -20,7 +20,18 @@ self.addEventListener('message', (event) => {
   console.log('[SW] Received message:', event.data);
 });
 
-const config = require("./config");
+importScripts("/libsodium.js", "/libsodium-wrappers.js");
+
+const config = {
+  APP_URL: self.location.origin + "/file",
+  encoder: new TextEncoder(),
+  decoder: new TextDecoder(),
+  sigCodes: {
+    v1: "Encrypted Using hatsmith",
+    v2_symmetric: "zDKO6XYXioc",
+    v2_asymmetric: "hTWKbfoikeg",
+  },
+};
 
 let streamController, fileName, theKey, state, header, salt, encRx, encTx, decRx, decTx;
 
@@ -41,10 +52,9 @@ self.addEventListener("fetch", (e) => {
   }
 });
 
-const _sodium = require("libsodium-wrappers");
 (async () => {
-  await _sodium.ready;
-  const sodium = _sodium;
+  await self.sodium.ready;
+  const sodium = self.sodium;
 
   addEventListener("message", (e) => {
     switch (e.data.cmd) {

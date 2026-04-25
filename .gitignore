@@ -2,3 +2,5 @@ node_modules
 .next
 out
 build
+public/libsodium.js
+public/libsodium-wrappers.js
